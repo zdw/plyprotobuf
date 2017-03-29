@@ -8,4 +8,5 @@ setup(name='plyprotobuf',
       author='Dusan Klinec',
       url='https://github.com/sb98052/plyprotobuf',
       packages=['plyproto'],
+      install_requires=['ply']
      )

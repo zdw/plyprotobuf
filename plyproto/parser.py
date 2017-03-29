@@ -1,4 +1,5 @@
 __author__ = "Dusan (Ph4r05) Klinec"
+
 __copyright__ = "Copyright (C) 2014 Dusan (ph4r05) Klinec"
 __license__ = "Apache License, Version 2.0"
 __version__ = "1.0"
@@ -7,11 +8,13 @@ import ply.lex as lex
 import ply.yacc as yacc
 from .model import *
 
+import pdb
+
 class ProtobufLexer(object):
     keywords = ('double', 'float', 'int32', 'int64', 'uint32', 'uint64', 'sint32', 'sint64',
                 'fixed32', 'fixed64', 'sfixed32', 'sfixed64', 'bool', 'string', 'bytes',
                 'message', 'required', 'optional', 'repeated', 'enum', 'extensions', 'max', 'extends', 'extend',
-                'to', 'package', 'service', 'rpc', 'returns', 'true', 'false', 'option', 'import')
+                'to', 'package', '_service', 'rpc', 'returns', 'true', 'false', 'option', 'import', 'manytoone', 'manytomany', 'onetoone')
 
     tokens = [
         'NAME',
@@ -21,6 +24,7 @@ class ProtobufLexer(object):
 
         'LBRACE', 'RBRACE', 'LBRACK', 'RBRACK',
         'LPAR', 'RPAR', 'EQ', 'SEMI', 'DOT',
+        'ARROW', 'COLON', 'COMMA',
         'STARTTOKEN'
 
     ] + [k.upper() for k in keywords]
@@ -42,6 +46,9 @@ class ProtobufLexer(object):
     t_RPAR = '\\)'
     t_EQ = '='
     t_SEMI = ';'
+    t_ARROW = '\\-\\>'
+    t_COLON = '\\:'
+    t_COMMA = '\\,'
     t_DOT = '\\.'
     t_ignore = ' \t\f'
     t_STARTTOKEN = '\\+'
@@ -105,6 +112,13 @@ class LexHelper:
         dst.setLexData(linespan=self.get_max_linespan(p), lexspan=self.get_max_lexspan(p))
         dst.setLexObj(p)
 
+def srcPort(x):
+    if (x):
+        return [FieldDirective(Name('port'),x)]
+    else:
+        return []
+
+
 class ProtobufParser(object):
     tokens = ProtobufLexer.tokens
     offset = 0
@@ -142,6 +156,12 @@ class ProtobufParser(object):
                           | BYTES'''
         p[0] = LU.i(p,1)
 
+    def p_link_type(self, p):
+        '''link_type      : ONETOONE
+                          | MANYTOONE
+                          | MANYTOMANY'''
+        p[0] = LU.i(p,1)
+
     def p_field_id(self, p):
         '''field_id : NUM'''
         p[0] = LU.i(p,1)
@@ -152,15 +172,30 @@ class ProtobufParser(object):
                   | FALSE'''
         p[0] = LU.i(p,1)
 
+    def p_rvalue3(self, p):
+        '''rvalue : STRING_LITERAL'''
+        p[0] = Name(LU.i(p, 1))
+        self.lh.set_parse_object(p[0], p)
+        p[0].deriveLex()
+
     def p_rvalue2(self, p):
         '''rvalue : NAME'''
         p[0] = Name(LU.i(p, 1))
         self.lh.set_parse_object(p[0], p)
         p[0].deriveLex()
 
+    def p_field_directives2(self, p):
+        '''field_directives : empty'''
+        p[0] = []
+
+    def p_field_directives(self, p):
+        '''field_directives : LBRACK field_directive_times RBRACK'''
+        p[0] = p[2]
+        #self.lh.set_parse_object(p[0], p)
+
     def p_field_directive(self, p):
-        '''field_directive : LBRACK NAME EQ rvalue RBRACK'''
-        p[0] = FieldDirective(Name(LU.i(p, 2)), LU.i(p,4))
+        '''field_directive : NAME EQ rvalue'''
+        p[0] = FieldDirective(Name(LU.i(p, 1)), LU.i(p, 3))
         self.lh.set_parse_object(p[0], p)
 
     def p_field_directive_times(self, p):
@@ -173,11 +208,11 @@ class ProtobufParser(object):
 
     def p_field_directive_plus(self, p):
         '''field_directive_plus : field_directive
-                               | field_directive_plus field_directive'''
+                               | field_directive_plus COMMA field_directive'''
         if len(p) == 2:
             p[0] = [LU(p,1)]
         else:
-            p[0] = p[1] + [LU(p,2)]
+            p[0] = p[1] + [LU(p,3)]
 
     def p_dotname(self, p):
         '''dotname : NAME
@@ -207,9 +242,27 @@ class ProtobufParser(object):
         self.lh.set_parse_object(p[0], p)
         p[0].deriveLex()
 
+    def p_colon_fieldname(self, p):
+        '''colon_fieldname : COLON field_name'''
+        p[0] = p[2]
+        self.lh.set_parse_object(p[0], p)
+
+    def p_colon_fieldname2(self, p):
+        '''colon_fieldname : empty'''
+        p[0] = None
+
+    # TODO: Add directives to link definition
+    def p_link_definition(self, p):
+        '''link_definition : field_modifier link_type field_name ARROW NAME colon_fieldname EQ field_id field_directives SEMI'''
+        p[0] = LinkSpec(
+                FieldDefinition(LU.i(p,1), Name('int32'), LU.i(p, 3), LU.i(p, 8), [FieldDirective(Name('type'), Name('link')), FieldDirective(Name('model'),LU.i(p, 5))] + srcPort(LU.i(p,6)) + LU.i(p,9)),
+                LinkDefinition(LU.i(p,2), LU.i(p,3), LU.i(p,5), LU.i(p,6)))
+
+        self.lh.set_parse_object(p[0], p)
+
     # Root of the field declaration.
     def p_field_definition(self, p):
-        '''field_definition : field_modifier field_type field_name EQ field_id field_directive_times SEMI'''
+        '''field_definition : field_modifier field_type field_name EQ field_id field_directives SEMI'''
         p[0] = FieldDefinition(LU.i(p,1), LU.i(p,2), LU.i(p, 3), LU.i(p,5), LU.i(p,6))
         self.lh.set_parse_object(p[0], p)
 
@@ -270,6 +323,7 @@ class ProtobufParser(object):
 
     def p_message_body_part(self, p):
         '''message_body_part : field_definition
+                           | link_definition
                            | enum_definition
                            | message_definition
                            | extensions_definition
@@ -290,11 +344,19 @@ class ProtobufParser(object):
         else:
             p[0] = p[1] + [p[2]]
 
+    def p_base_definition(self, p):
+        '''base_definition : LPAR NAME RPAR'''
+        p[0] = p[2]
+    
+    def p_base_definition2(self, p):
+        '''base_definition : empty'''
+        p[0] = None
+
     # Root of the message declaration.
     # message_definition = MESSAGE_ - ident("messageId") + LBRACE + message_body("body") + RBRACE
     def p_message_definition(self, p):
-        '''message_definition : MESSAGE NAME LBRACE message_body RBRACE'''
-        p[0] = MessageDefinition(Name(LU.i(p, 2)), LU.i(p,4))
+        '''message_definition : MESSAGE NAME base_definition LBRACE message_body RBRACE'''
+        p[0] = MessageDefinition(Name(LU.i(p, 2)), LU.i(p, 3), LU.i(p,5))
         self.lh.set_parse_object(p[0], p)
 
     # method_definition ::= 'rpc' ident '(' [ ident ] ')' 'returns' '(' [ ident ] ')' ';'
@@ -318,7 +380,7 @@ class ProtobufParser(object):
     # service_definition ::= 'service' ident '{' method_definition* '}'
     # service_definition = SERVICE_ - ident("serviceName") + LBRACE + ZeroOrMore(Group(method_definition)) + RBRACE
     def p_service_definition(self, p):
-        '''service_definition : SERVICE NAME LBRACE method_definition_opt RBRACE'''
+        '''service_definition : _SERVICE NAME LBRACE method_definition_opt RBRACE'''
         p[0] = ServiceDefinition(Name(LU.i(p, 2)), LU.i(p,4))
         self.lh.set_parse_object(p[0], p)
 
@@ -401,8 +463,8 @@ class ProtobufParser(object):
 class ProtobufAnalyzer(object):
 
     def __init__(self):
-        self.lexer = lex.lex(module=ProtobufLexer(), optimize=1)
-        self.parser = yacc.yacc(module=ProtobufParser(), start='goal', optimize=1)
+        self.lexer = lex.lex(module=ProtobufLexer())#, optimize=1)
+        self.parser = yacc.yacc(module=ProtobufParser(), start='goal', debug=0)#optimize=1)
 
     def tokenize_string(self, code):
         self.lexer.input(code)

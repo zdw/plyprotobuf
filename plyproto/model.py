@@ -185,6 +185,7 @@ class FieldDirective(SourceElement):
         if visitor.visit_FieldDirective(self):
             self.v(self.name, visitor)
             self.v(self.value, visitor)
+            visitor.visit_FieldDirective_post(self)
 
 class FieldType(SourceElement):
     def __init__(self, name, linespan=None, lexspan=None, p=None):
@@ -196,6 +197,22 @@ class FieldType(SourceElement):
     def accept(self, visitor):
         if visitor.visit_FieldType(self):
             self.v(self.name, visitor)
+
+class LinkDefinition(SourceElement):
+    def __init__(self, link_type, src_port, name, dst_port, linespan=None, lexspan=None, p=None):
+        super(LinkDefinition, self).__init__(linespan=linespan, lexspan=lexspan, p=p)
+        self._fields += ['link_type', 'src_port', 'name', 'dst_port']
+        self.link_type = link_type
+        Base.p(self.link_type, self)
+        self.src_port = src_port
+        Base.p(self.src_port, self)
+        self.name = name
+        Base.p(self.name, self)
+        self.dst_port = dst_port
+        Base.p(self.dst_port, self)
+
+    def accept(self, visitor):
+         visitor.visit_LinkDefinition(self)
 
 class FieldDefinition(SourceElement):
     def __init__(self, field_modifier, ftype, name, fieldId, fieldDirective, linespan=None, lexspan=None, p=None):
@@ -219,6 +236,7 @@ class FieldDefinition(SourceElement):
             self.v(self.ftype, visitor)
             self.v(self.fieldId, visitor)
             self.v(self.fieldDirective, visitor)
+            visitor.visit_FieldDefinition_post(self)
 
 class EnumFieldDefinition(SourceElement):
     def __init__(self, name, fieldId, linespan=None, lexspan=None, p=None):
@@ -248,6 +266,41 @@ class EnumDefinition(SourceElement):
             self.v(self.name, visitor)
             self.v(self.body, visitor)
 
+class LinkSpec(SourceElement):
+    def __init__(self, field_spec, link_spec, linespan=None, lexspan=None, p=None):
+        super(LinkSpec, self).__init__(linespan=linespan, lexspan=lexspan, p=p)
+        self._fields += ['link_def', 'field_def']
+        self.link_def = link_spec
+        Base.p(self.link_def, self)
+        self.field_def = field_spec
+        Base.p(self.field_def, self)
+
+    def accept(self, visitor):
+        if visitor.visit_LinkSpec(self):
+            self.v(self.link_def, visitor)
+            self.v(self.field_def, visitor)
+            visitor.visit_LinkSpec_post(self)
+
+class MessageDefinition(SourceElement):
+    def __init__(self, name, bclass, body, linespan=None, lexspan=None, p=None):
+        super(MessageDefinition, self).__init__(linespan=linespan, lexspan=lexspan, p=p)
+        self._fields += ['name', 'bclass', 'body']
+        self.name = name
+        Base.p(self.name, self)
+        self.bclass = bclass
+        Base.p(self.bclass, self)
+        self.body = body
+        Base.p(self.body, self)
+
+    def accept(self, visitor):
+        if visitor.visit_MessageDefinition(self):
+            self.v(self.name, visitor)
+            self.v(self.bclass, visitor)
+            self.v(self.body, visitor)
+            visitor.visit_MessageDefinition_post(self)
+
+
+"""
 class MessageDefinition(SourceElement):
     def __init__(self, name, body, linespan=None, lexspan=None, p=None):
         super(MessageDefinition, self).__init__(linespan=linespan, lexspan=lexspan, p=p)
@@ -261,6 +314,8 @@ class MessageDefinition(SourceElement):
         if visitor.visit_MessageDefinition(self):
             self.v(self.name, visitor)
             self.v(self.body, visitor)
+            visitor.visit_MessageDefinition_post(self)
+"""
 
 class MessageExtension(SourceElement):
     def __init__(self, name, body, linespan=None, lexspan=None, p=None):
@@ -275,6 +330,7 @@ class MessageExtension(SourceElement):
         if visitor.visit_MessageExtension(self):
             self.v(self.name, visitor)
             self.v(self.body, visitor)
+            visitor.visit_MessageExtension_post(self)
 
 class MethodDefinition(SourceElement):
     def __init__(self, name, name2, name3, linespan=None, lexspan=None, p=None):
@@ -292,6 +348,7 @@ class MethodDefinition(SourceElement):
             self.v(self.name, visitor)
             self.v(self.name2, visitor)
             self.v(self.name3, visitor)
+            visitor.visit_MethodDefinition_post(self)
 
 class ServiceDefinition(SourceElement):
     def __init__(self, name, body, linespan=None, lexspan=None, p=None):
@@ -306,6 +363,7 @@ class ServiceDefinition(SourceElement):
         if visitor.visit_ServiceDefinition(self):
             self.v(self.name, visitor)
             self.v(self.body, visitor)
+            visitor.visit_ServiceDefinition_post(self)
 
 class ExtensionsMax(SourceElement):
     pass
@@ -323,6 +381,7 @@ class ExtensionsDirective(SourceElement):
         if visitor.visit_ExtensionsDirective(self):
             self.v(self.fromVal, visitor)
             self.v(self.toVal, visitor)
+            visitor.visit_ExtensionsDirective_post(self)
 
 class Literal(SourceElement):
 
@@ -393,3 +452,4 @@ class ProtoFile(SourceElement):
         if visitor.visit_Proto(self):
             self.v(self.pkg, visitor)
             self.v(self.body, visitor)
+            visitor.visit_Proto_post(self)

@@ -18,6 +18,7 @@ class ProtobufLexer(object):
 
     tokens = [
         'NAME',
+        'PLUS',
         'NUM',
         'STRING_LITERAL',
         'LINE_COMMENT', 'BLOCK_COMMENT',
@@ -30,7 +31,7 @@ class ProtobufLexer(object):
     ] + [k.upper() for k in keywords]
     literals = '()+-*/=?:,.^|&~!=[]{};<>@%'
 
-    t_NUM = r'[+-]?\d+'
+    t_NUM = r'[+-]?\d+(\.\d+)?'
     t_STRING_LITERAL = r'\"([^\\\n]|(\\.))*?\"'
 
     t_ignore_LINE_COMMENT = '//.*'
@@ -44,6 +45,7 @@ class ProtobufLexer(object):
     t_RBRACK = '\\]'
     t_LPAR = '\\('
     t_RPAR = '\\)'
+    t_PLUS = '\\+'
     t_EQ = '='
     t_SEMI = ';'
     t_ARROW = '\\-\\>'
@@ -198,6 +200,27 @@ class ProtobufParser(object):
         p[0] = FieldDirective(Name(LU.i(p, 1)), LU.i(p, 3))
         self.lh.set_parse_object(p[0], p)
 
+
+    def p_csv_expr(self, p):
+        '''csv_expr : LPAR csv RPAR'''
+        p[0] = p[2]
+
+    def p_csv_expr2(self, p):
+        '''csv_expr : empty'''
+        p[0] = []
+
+    def p_csv2(self, p):
+        '''csv : empty'''
+
+    def p_csv(self, p):
+        '''csv : NAME 
+               | csv COMMA NAME'''
+
+        if len(p) == 2:
+            p[0] = [LU(p,1)]
+        else:
+            p[0] = p[1] + [LU(p,3)]
+
     def p_field_directive_times(self, p):
         '''field_directive_times : field_directive_plus'''
         p[0] = p[1]
@@ -226,6 +249,7 @@ class ProtobufParser(object):
     def p_fieldName(self, p):
         '''field_name : NAME
                       | MESSAGE
+                      | PLUS
                       | MAX'''
         p[0] = Name(LU.i(p,1))
         self.lh.set_parse_object(p[0], p)
@@ -344,18 +368,10 @@ class ProtobufParser(object):
         else:
             p[0] = p[1] + [p[2]]
 
-    def p_base_definition(self, p):
-        '''base_definition : LPAR NAME RPAR'''
-        p[0] = p[2]
-    
-    def p_base_definition2(self, p):
-        '''base_definition : empty'''
-        p[0] = None
-
     # Root of the message declaration.
     # message_definition = MESSAGE_ - ident("messageId") + LBRACE + message_body("body") + RBRACE
     def p_message_definition(self, p):
-        '''message_definition : MESSAGE NAME base_definition LBRACE message_body RBRACE'''
+        '''message_definition : MESSAGE NAME csv_expr LBRACE message_body RBRACE'''
         p[0] = MessageDefinition(Name(LU.i(p, 2)), LU.i(p, 3), LU.i(p,5))
         self.lh.set_parse_object(p[0], p)
 

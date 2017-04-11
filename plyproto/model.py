@@ -282,20 +282,20 @@ class LinkSpec(SourceElement):
             visitor.visit_LinkSpec_post(self)
 
 class MessageDefinition(SourceElement):
-    def __init__(self, name, bclass, body, linespan=None, lexspan=None, p=None):
+    def __init__(self, name, bases, body, linespan=None, lexspan=None, p=None):
         super(MessageDefinition, self).__init__(linespan=linespan, lexspan=lexspan, p=p)
-        self._fields += ['name', 'bclass', 'body']
+        self._fields += ['name', 'bases', 'body']
         self.name = name
         Base.p(self.name, self)
-        self.bclass = bclass
-        Base.p(self.bclass, self)
+        self.bases = bases
+        Base.p(self.bases, self)
         self.body = body
         Base.p(self.body, self)
 
     def accept(self, visitor):
         if visitor.visit_MessageDefinition(self):
             self.v(self.name, visitor)
-            self.v(self.bclass, visitor)
+            self.v(self.bases, visitor)
             self.v(self.body, visitor)
             visitor.visit_MessageDefinition_post(self)
 

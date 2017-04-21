@@ -13,19 +13,18 @@ import pdb
 class ProtobufLexer(object):
     keywords = ('double', 'float', 'int32', 'int64', 'uint32', 'uint64', 'sint32', 'sint64',
                 'fixed32', 'fixed64', 'sfixed32', 'sfixed64', 'bool', 'string', 'bytes',
-                'message', 'required', 'optional', 'repeated', 'enum', 'extensions', 'max', 'extends', 'extend',
+                'message', 'required', 'optional', 'repeated', 'enum', 'extensions', 'max',  'extend',
                 'to', 'package', '_service', 'rpc', 'returns', 'true', 'false', 'option', 'import', 'manytoone', 'manytomany', 'onetoone')
 
     tokens = [
         'NAME',
-        'PLUS',
         'NUM',
         'STRING_LITERAL',
-        'LINE_COMMENT', 'BLOCK_COMMENT',
+        #'LINE_COMMENT', 'BLOCK_COMMENT',
 
         'LBRACE', 'RBRACE', 'LBRACK', 'RBRACK',
         'LPAR', 'RPAR', 'EQ', 'SEMI', 'DOT',
-        'ARROW', 'COLON', 'COMMA',
+        'ARROW', 'COLON', 'COMMA', 'SLASH',
         'STARTTOKEN'
 
     ] + [k.upper() for k in keywords]
@@ -45,18 +44,18 @@ class ProtobufLexer(object):
     t_RBRACK = '\\]'
     t_LPAR = '\\('
     t_RPAR = '\\)'
-    t_PLUS = '\\+'
     t_EQ = '='
     t_SEMI = ';'
     t_ARROW = '\\-\\>'
     t_COLON = '\\:'
+    t_SLASH = '\\/'
     t_COMMA = '\\,'
     t_DOT = '\\.'
     t_ignore = ' \t\f'
     t_STARTTOKEN = '\\+'
 
     def t_NAME(self, t):
-        '[A-Za-z_$][A-Za-z0-9_$]*'
+        '[A-Za-z_$][A-Za-z0-9_+$]*'
         if t.value in ProtobufLexer.keywords:
             #print "type: %s val %s t %s" % (t.type, t.value, t)
             t.type = t.value.upper()
@@ -247,9 +246,9 @@ class ProtobufParser(object):
 
     # Hack for cases when there is a field named 'message' or 'max'
     def p_fieldName(self, p):
-        '''field_name : NAME
+        '''field_name : STARTTOKEN
+                      | NAME
                       | MESSAGE
-                      | PLUS
                       | MAX'''
         p[0] = Name(LU.i(p,1))
         self.lh.set_parse_object(p[0], p)
@@ -266,6 +265,15 @@ class ProtobufParser(object):
         self.lh.set_parse_object(p[0], p)
         p[0].deriveLex()
 
+    def p_slash_name(self, p):
+        '''slash_name : SLASH NAME'''
+        p[0] = p[2]
+        #self.lh.set_parse_object(p[0], p)
+
+    def p_slash_name2(self, p):
+        '''slash_name : empty'''
+        p[0] = None
+
     def p_colon_fieldname(self, p):
         '''colon_fieldname : COLON field_name'''
         p[0] = p[2]
@@ -277,10 +285,10 @@ class ProtobufParser(object):
 
     # TODO: Add directives to link definition
     def p_link_definition(self, p):
-        '''link_definition : field_modifier link_type field_name ARROW NAME colon_fieldname EQ field_id field_directives SEMI'''
+        '''link_definition : field_modifier link_type field_name ARROW NAME slash_name colon_fieldname EQ field_id field_directives SEMI'''
         p[0] = LinkSpec(
-                FieldDefinition(LU.i(p,1), Name('int32'), LU.i(p, 3), LU.i(p, 8), [FieldDirective(Name('type'), Name('link')), FieldDirective(Name('model'),LU.i(p, 5))] + srcPort(LU.i(p,6)) + LU.i(p,9)),
-                LinkDefinition(LU.i(p,2), LU.i(p,3), LU.i(p,5), LU.i(p,6)))
+                FieldDefinition(LU.i(p,1), Name('int32'), LU.i(p, 3), LU.i(p, 9), [FieldDirective(Name('type'), Name('link')), FieldDirective(Name('model'),LU.i(p, 5))] + srcPort(LU.i(p,7)) + LU.i(p,10)),
+                LinkDefinition(LU.i(p,2), LU.i(p,3), LU.i(p,5), LU.i(p,6), LU.i(p,7)))
 
         self.lh.set_parse_object(p[0], p)
 

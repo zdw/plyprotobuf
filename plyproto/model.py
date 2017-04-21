@@ -199,15 +199,21 @@ class FieldType(SourceElement):
             self.v(self.name, visitor)
 
 class LinkDefinition(SourceElement):
-    def __init__(self, link_type, src_port, name, dst_port, linespan=None, lexspan=None, p=None):
+    def __init__(self, link_type, src_port, name, through, dst_port, linespan=None, lexspan=None, p=None):
         super(LinkDefinition, self).__init__(linespan=linespan, lexspan=lexspan, p=p)
-        self._fields += ['link_type', 'src_port', 'name', 'dst_port']
+        self._fields += ['link_type', 'src_port', 'name', 'dst_port', 'through']
         self.link_type = link_type
         Base.p(self.link_type, self)
+
         self.src_port = src_port
         Base.p(self.src_port, self)
+
         self.name = name
         Base.p(self.name, self)
+
+        self.through = through
+        Base.p(self.through, self)
+
         self.dst_port = dst_port
         Base.p(self.dst_port, self)
 

@@ -357,6 +357,7 @@ class ProtobufParser(object):
         '''message_body_part : field_definition
                            | link_definition
                            | enum_definition
+                           | option_directive
                            | message_definition
                            | extensions_definition
                            | message_extension'''

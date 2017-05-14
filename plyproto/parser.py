@@ -489,7 +489,7 @@ class ProtobufAnalyzer(object):
 
     def __init__(self):
         self.lexer = lex.lex(module=ProtobufLexer())#, optimize=1)
-        self.parser = yacc.yacc(module=ProtobufParser(), start='goal', debug=0)#optimize=1)
+        self.parser = yacc.yacc(module=ProtobufParser(), start='goal', debug=0, outputdir='/tmp')#optimize=1)
 
     def tokenize_string(self, code):
         self.lexer.input(code)

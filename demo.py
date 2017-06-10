@@ -16,10 +16,12 @@ test3 = """package tutorial;
 option java_outer_classname = "PushNotifications";
 option optimize_for = SPEED;
 
-  message Person {
+  message Person(types.Actor) {
       required string name = 1;
       required int32 id = 2;
       optional string email = 3;
+
+      required manytoone work_location->Location/types.Company:employees = 4;
 
       enum PhoneType {
         MOBILE = 0;

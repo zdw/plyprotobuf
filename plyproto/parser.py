@@ -212,8 +212,8 @@ class ProtobufParser(object):
         '''csv : empty'''
 
     def p_csv(self, p):
-        '''csv : NAME 
-               | csv COMMA NAME'''
+        '''csv : dotname 
+               | csv COMMA dotname'''
 
         if len(p) == 2:
             p[0] = [LU(p,1)]
@@ -266,7 +266,7 @@ class ProtobufParser(object):
         p[0].deriveLex()
 
     def p_slash_name(self, p):
-        '''slash_name : SLASH NAME'''
+        '''slash_name : SLASH dotname'''
         p[0] = p[2]
         #self.lh.set_parse_object(p[0], p)
 
@@ -285,7 +285,7 @@ class ProtobufParser(object):
 
     # TODO: Add directives to link definition
     def p_link_definition(self, p):
-        '''link_definition : field_modifier link_type field_name ARROW NAME slash_name colon_fieldname EQ field_id field_directives SEMI'''
+        '''link_definition : field_modifier link_type field_name ARROW dotname slash_name colon_fieldname EQ field_id field_directives SEMI'''
         p[0] = LinkSpec(
                 FieldDefinition(LU.i(p,1), Name('int32'), LU.i(p, 3), LU.i(p, 9), [FieldDirective(Name('type'), Name('link')), FieldDirective(Name('model'),LU.i(p, 5))] + srcPort(LU.i(p,7)) + LU.i(p,10)),
                 LinkDefinition(LU.i(p,2), LU.i(p,3), LU.i(p,5), LU.i(p,6), LU.i(p,7)))

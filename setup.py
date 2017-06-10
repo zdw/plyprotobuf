@@ -2,11 +2,11 @@
 
 from distutils.core import setup
 
-setup(name='plyprotobuf',
-      version='1.2',
-      description='Protobuf Parsing Library that uses ply',
-      author='Dusan Klinec',
+setup(name='plyxproto',
+      version='1.3',
+      description='Protobuf Parsing Library that uses ply and supports XOS extensions',
+      author='Dusan Klinec, Sapan Bhatia',
       url='https://github.com/sb98052/plyprotobuf',
-      packages=['plyproto'],
+      packages=['plyxproto'],
       install_requires=['ply']
      )

@@ -441,23 +441,16 @@ class ProtobufParser(object):
         p[0] = OptionStatement(Name(LU.i(p, 2)), LU.i(p,4))
         self.lh.set_parse_object(p[0], p)
 
-    # topLevelStatement = Group(message_definition | message_extension | enum_definition | service_definition | import_directive | option_directive)
+    # topLevelStatement = Group(message_definition | message_extension | enum_definition | service_definition | import_directive | option_directive | package_definition)
     def p_topLevel(self,p):
         '''topLevel : message_definition
                     | message_extension
                     | enum_definition
                     | service_definition
                     | import_directive
+                    | package_directive
                     | option_directive'''
         p[0] = p[1]
-
-    def p_package_definition(self, p):
-        '''package_definition : package_directive'''
-        p[0] = p[1]
-
-    def p_packages2(self, p):
-        '''package_definition : empty'''
-        p[0] = []
 
     def p_statements2(self, p):
         '''statements : topLevel
@@ -473,8 +466,8 @@ class ProtobufParser(object):
 
     # parser = Optional(package_directive) + ZeroOrMore(topLevelStatement)
     def p_protofile(self, p):
-        '''protofile : package_definition statements'''
-        p[0] = ProtoFile(LU.i(p,1), LU.i(p,2))
+        '''protofile : statements'''
+        p[0] = ProtoFile(LU.i(p,1))
         self.lh.set_parse_object(p[0], p)
 
     # Parsing starting point

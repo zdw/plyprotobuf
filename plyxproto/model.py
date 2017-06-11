@@ -446,16 +446,13 @@ class DotName(Name):
 
 class ProtoFile(SourceElement):
 
-    def __init__(self, pkg, body, linespan=None, lexspan=None, p=None):
+    def __init__(self, body, linespan=None, lexspan=None, p=None):
         super(ProtoFile, self).__init__(linespan=linespan, lexspan=lexspan, p=p)
-        self._fields += ['pkg', 'body']
-        self.pkg = pkg
-        Base.p(self.pkg, self)
+        self._fields += ['body']
         self.body = body
         Base.p(self.body, self)
 
     def accept(self, visitor):
         if visitor.visit_Proto(self):
-            self.v(self.pkg, visitor)
             self.v(self.body, visitor)
             visitor.visit_Proto_post(self)

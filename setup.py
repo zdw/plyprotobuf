@@ -3,7 +3,7 @@
 from distutils.core import setup
 
 setup(name='plyxproto',
-      version='1.3',
+      version='2.0',
       description='Protobuf Parsing Library that uses ply and supports XOS extensions',
       author='Dusan Klinec, Sapan Bhatia',
       url='https://github.com/sb98052/plyprotobuf',

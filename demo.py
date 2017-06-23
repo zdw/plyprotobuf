@@ -1,4 +1,4 @@
-import plyproto.parser as plyproto
+import plyxproto.parser as plyproto
 
 test1 = """package tutorial;"""
 
@@ -16,7 +16,9 @@ test3 = """package tutorial;
 option java_outer_classname = "PushNotifications";
 option optimize_for = SPEED;
 
-  message Person(types.Actor) {
+  policy slice_user <foobar>
+
+  message Person(core.Actor) {
       required string name = 1;
       required int32 id = 2;
       optional string email = 3;
@@ -45,5 +47,6 @@ message AddressBook {
   extensions 500 to max;
 }"""
 
+p5 = '''policy foo <exists foo: foo.x=foo.y>'''
 parser = plyproto.ProtobufAnalyzer()
-print(parser.parse_string(test3))
+print(parser.parse_string(p5))

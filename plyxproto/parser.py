@@ -9,25 +9,31 @@ import ply.yacc as yacc
 from .model import *
 
 import pdb
+from helpers import LexHelper, LU
+from logicparser import FOLParser, FOLLexer
 
 class ProtobufLexer(object):
     keywords = ('double', 'float', 'int32', 'int64', 'uint32', 'uint64', 'sint32', 'sint64',
                 'fixed32', 'fixed64', 'sfixed32', 'sfixed64', 'bool', 'string', 'bytes',
                 'message', 'required', 'optional', 'repeated', 'enum', 'extensions', 'max',  'extend',
-                'to', 'package', '_service', 'rpc', 'returns', 'true', 'false', 'option', 'import', 'manytoone', 'manytomany', 'onetoone')
+                'to', 'package', '_service', 'rpc', 'returns', 'true', 'false', 'option', 'import', 'manytoone', 'manytomany', 'onetoone', 'policy')
 
     tokens = [
+        'POLICYBODY',
         'NAME',
         'NUM',
         'STRING_LITERAL',
         #'LINE_COMMENT', 'BLOCK_COMMENT',
-
         'LBRACE', 'RBRACE', 'LBRACK', 'RBRACK',
         'LPAR', 'RPAR', 'EQ', 'SEMI', 'DOT',
         'ARROW', 'COLON', 'COMMA', 'SLASH',
+        'DOUBLECOLON',
         'STARTTOKEN'
-
     ] + [k.upper() for k in keywords]
+
+
+    t_POLICYBODY = r'< (.|\n)*? >'
+
     literals = '()+-*/=?:,.^|&~!=[]{};<>@%'
 
     t_NUM = r'[+-]?\d+(\.\d+)?'
@@ -42,6 +48,8 @@ class ProtobufLexer(object):
     t_RBRACE = '}'
     t_LBRACK = '\\['
     t_RBRACK = '\\]'
+
+
     t_LPAR = '\\('
     t_RPAR = '\\)'
     t_EQ = '='
@@ -53,6 +61,7 @@ class ProtobufLexer(object):
     t_DOT = '\\.'
     t_ignore = ' \t\f'
     t_STARTTOKEN = '\\+'
+    t_DOUBLECOLON = '\\:\\:'
 
     def t_NAME(self, t):
         '[A-Za-z_$][A-Za-z0-9_+$]*'
@@ -73,45 +82,6 @@ class ProtobufLexer(object):
         print("Illegal character '{}' ({}) in line {}".format(t.value[0], hex(ord(t.value[0])), t.lexer.lineno))
         t.lexer.skip(1)
 
-class LexHelper:
-    offset = 0
-    def get_max_linespan(self, p):
-        defSpan=[1e60, -1]
-        mSpan=[1e60, -1]
-        for sp in range(0, len(p)):
-            csp = p.linespan(sp)
-            if csp[0] == 0 and csp[1] == 0:
-                if hasattr(p[sp], "linespan"):
-                    csp = p[sp].linespan
-                else:
-                    continue
-            if csp == None or len(csp) != 2: continue
-            if csp[0] == 0 and csp[1] == 0: continue
-            if csp[0] < mSpan[0]: mSpan[0] = csp[0]
-            if csp[1] > mSpan[1]: mSpan[1] = csp[1]
-        if defSpan == mSpan: return (0,0)
-        return tuple([mSpan[0]-self.offset, mSpan[1]-self.offset])
-
-    def get_max_lexspan(self, p):
-        defSpan=[1e60, -1]
-        mSpan=[1e60, -1]
-        for sp in range(0, len(p)):
-            csp = p.lexspan(sp)
-            if csp[0] == 0 and csp[1] == 0:
-                if hasattr(p[sp], "lexspan"):
-                    csp = p[sp].lexspan
-                else:
-                    continue
-            if csp == None or len(csp) != 2: continue
-            if csp[0] == 0 and csp[1] == 0: continue
-            if csp[0] < mSpan[0]: mSpan[0] = csp[0]
-            if csp[1] > mSpan[1]: mSpan[1] = csp[1]
-        if defSpan == mSpan: return (0,0)
-        return tuple([mSpan[0]-self.offset, mSpan[1]-self.offset])
-
-    def set_parse_object(self, dst, p):
-        dst.setLexData(linespan=self.get_max_linespan(p), lexspan=self.get_max_lexspan(p))
-        dst.setLexObj(p)
 
 def srcPort(x):
     if (x):
@@ -124,6 +94,8 @@ class ProtobufParser(object):
     tokens = ProtobufLexer.tokens
     offset = 0
     lh = LexHelper()
+    fol_lexer = lex.lex(module=FOLLexer())#, optimize=1)
+    fol_parser = yacc.yacc(module=FOLParser(), start='goal')
 
     def setOffset(self, of):
         self.offset = of
@@ -325,6 +297,12 @@ class ProtobufParser(object):
         '''enum_body_opt : enum_body'''
         p[0] = p[1]
 
+    def p_policy_definition(self, p):
+        '''policy_definition : POLICY NAME POLICYBODY'''
+        fol = self.fol_parser.parse(p[3], lexer = self.fol_lexer)
+        p[0] = PolicyDefinition(Name(LU.i(p, 2)), fol)
+        self.lh.set_parse_object(p[0], p)
+
     # Root of the enum declaration.
     # enum_definition ::= 'enum' ident '{' { ident '=' integer ';' }* '}'
     def p_enum_definition(self, p):
@@ -446,6 +424,7 @@ class ProtobufParser(object):
         '''topLevel : message_definition
                     | message_extension
                     | enum_definition
+                    | policy_definition
                     | service_definition
                     | import_directive
                     | package_directive

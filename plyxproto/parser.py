@@ -171,6 +171,14 @@ class ProtobufParser(object):
         p[0] = FieldDirective(Name(LU.i(p, 1)), LU.i(p, 3))
         self.lh.set_parse_object(p[0], p)
 
+    def p_policy_opt_explicit(self, p):
+        '''policy_opt : DOUBLECOLON NAME'''
+        p[0] = p[2]
+
+
+    def p_policy_opt_empty(self, p):
+        '''policy_opt : empty'''
+        p[0] = None
 
     def p_csv_expr(self, p):
         '''csv_expr : LPAR csv RPAR'''
@@ -266,8 +274,8 @@ class ProtobufParser(object):
 
     # Root of the field declaration.
     def p_field_definition(self, p):
-        '''field_definition : field_modifier field_type field_name EQ field_id field_directives SEMI'''
-        p[0] = FieldDefinition(LU.i(p,1), LU.i(p,2), LU.i(p, 3), LU.i(p,5), LU.i(p,6))
+        '''field_definition : field_modifier field_type field_name policy_opt EQ field_id field_directives SEMI'''
+        p[0] = FieldDefinition(LU.i(p,1), LU.i(p,2), LU.i(p, 3), LU.i(p,4), LU.i(p,6), LU.i(p,7))
         self.lh.set_parse_object(p[0], p)
 
     # Root of the enum field declaration.
@@ -358,8 +366,8 @@ class ProtobufParser(object):
     # Root of the message declaration.
     # message_definition = MESSAGE_ - ident("messageId") + LBRACE + message_body("body") + RBRACE
     def p_message_definition(self, p):
-        '''message_definition : MESSAGE NAME csv_expr LBRACE message_body RBRACE'''
-        p[0] = MessageDefinition(Name(LU.i(p, 2)), LU.i(p, 3), LU.i(p,5))
+        '''message_definition : MESSAGE NAME policy_opt csv_expr LBRACE message_body RBRACE'''
+        p[0] = MessageDefinition(Name(LU.i(p, 2)), LU.i(p,3), LU.i(p, 4), LU.i(p,6))
         self.lh.set_parse_object(p[0], p)
 
     # method_definition ::= 'rpc' ident '(' [ ident ] ')' 'returns' '(' [ ident ] ')' ';'

@@ -83,7 +83,7 @@ class LinkDefinition(SourceElement):
 class FieldDefinition(SourceElement):
     def __init__(self, field_modifier, ftype, name, fieldId, fieldDirective, linespan=None, lexspan=None, p=None):
         super(FieldDefinition, self).__init__(linespan=linespan, lexspan=lexspan, p=p)
-        self._fields += ['field_modifier', 'ftype', 'name', 'fieldId', 'fieldDirective']
+        self._fields += ['field_modifier', 'ftype', 'name', 'fieldId', 'policy', 'fieldDirective']
         self.name = name
         Base.p(self.name, self)
         self.field_modifier = field_modifier
@@ -91,6 +91,9 @@ class FieldDefinition(SourceElement):
         self.ftype = ftype
         Base.p(self.ftype, self)
         self.fieldId = fieldId
+        Base.p(self.policy, self)
+        self.policy = policy
+
         Base.p(self.fieldId, self)
         self.fieldDirective = fieldDirective
         Base.p(self.fieldDirective, self)
@@ -162,13 +165,19 @@ class LinkSpec(SourceElement):
             visitor.visit_LinkSpec_post(self)
 
 class MessageDefinition(SourceElement):
-    def __init__(self, name, bases, body, linespan=None, lexspan=None, p=None):
+    def __init__(self, name, policy, bases, body, linespan=None, lexspan=None, p=None):
         super(MessageDefinition, self).__init__(linespan=linespan, lexspan=lexspan, p=p)
-        self._fields += ['name', 'bases', 'body']
+        self._fields += ['name', 'policy', 'bases', 'body']
+
         self.name = name
         Base.p(self.name, self)
+
+        self.policy = policy
+        Base.p(self.policy, self)
+
         self.bases = bases
         Base.p(self.bases, self)
+
         self.body = body
         Base.p(self.body, self)
 

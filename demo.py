@@ -47,6 +47,15 @@ message AddressBook {
   extensions 500 to max;
 }"""
 
-p5 = '''policy foo <exists foo: foo.x=foo.y>'''
+test4 = '''policy foo <exists foo: foo.x=foo.y>'''
 parser = plyproto.ProtobufAnalyzer()
-print(parser.parse_string(p5))
+
+tests = globals()
+
+for t in tests:
+    import pdb
+    pdb.set_trace()
+    if t.startswith('test'):
+        print 'parsin %s'%t
+        parser.parse_string(globals()[t])
+

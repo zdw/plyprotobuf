@@ -11,12 +11,16 @@ from .model import *
 import pdb
 from helpers import LexHelper, LU
 from logicparser import FOLParser, FOLLexer
+import ast
+
+class PythonError(Exception):
+    pass
 
 class ProtobufLexer(object):
     keywords = ('double', 'float', 'int32', 'int64', 'uint32', 'uint64', 'sint32', 'sint64',
                 'fixed32', 'fixed64', 'sfixed32', 'sfixed64', 'bool', 'string', 'bytes',
                 'message', 'required', 'optional', 'repeated', 'enum', 'extensions', 'max',  'extend',
-                'to', 'package', '_service', 'rpc', 'returns', 'true', 'false', 'option', 'import', 'manytoone', 'manytomany', 'onetoone', 'policy')
+                'to', 'package', '_service', 'rpc', 'returns', 'true', 'false', 'option', 'import', 'manytoone', 'manytomany', 'onetoone', 'policy', 'map', 'reduce')
 
     tokens = [
         'POLICYBODY',
@@ -175,7 +179,6 @@ class ProtobufParser(object):
         '''policy_opt : DOUBLECOLON NAME'''
         p[0] = p[2]
 
-
     def p_policy_opt_empty(self, p):
         '''policy_opt : empty'''
         p[0] = None
@@ -304,6 +307,30 @@ class ProtobufParser(object):
     def p_enum_body_opt2(self, p):
         '''enum_body_opt : enum_body'''
         p[0] = p[1]
+
+    def p_reduce_definition(self, p):
+        '''reduce_definition : REDUCE NAME POLICYBODY'''
+        ltxt = p[3].lstrip('<').rstrip('>')
+        l = ast.parse(ltxt).body[0]
+        if not isinstance(l, ast.Expr):
+            raise PythonError("reduce operator needs to be an expression")
+        elif not isinstance(l.value, ast.Lambda):
+            raise PythonError("reduce operator needs to be a lambda")
+
+        p[0] = ReduceDefinition(Name(LU.i(p, 2)), ltxt)
+        self.lh.set_parse_object(p[0], p)
+
+    def p_map_definition(self, p):
+        '''map_definition : MAP NAME POLICYBODY'''
+        ltxt = p[3].lstrip('<').rstrip('>')
+        l = ast.parse(ltxt).body[0]
+        if not isinstance(l, ast.Expr):
+            raise PythonError("map operator needs to be an expression")
+        elif not isinstance(l.value, ast.Lambda):
+            raise PythonError("map operator needs to be a lambda")
+
+        p[0] = MapDefinition(Name(LU.i(p, 2)), ltxt)
+        self.lh.set_parse_object(p[0], p)
 
     def p_policy_definition(self, p):
         '''policy_definition : POLICY NAME POLICYBODY'''

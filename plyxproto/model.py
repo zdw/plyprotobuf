@@ -121,6 +121,36 @@ class EnumFieldDefinition(SourceElement):
             self.v(self.name, visitor)
             self.v(self.fieldId, visitor)
 
+class ReduceDefinition(SourceElement):
+    def __init__(self, name, body, linespan=None, lexspan=None, p=None):
+        super(ReduceDefinition, self).__init__(linespan=linespan, lexspan=lexspan, p=p)
+        self._fields += ['name', 'body']
+        self.name = name
+        Base.p(self.name, self)
+        self.body = body
+        Base.p(self.body, self)
+
+    def accept(self, visitor):
+        if visitor.visit_EnumDefinition(self):
+            self.v(self.name, visitor)
+            self.v(self.body, visitor)
+
+
+class MapDefinition(SourceElement):
+    def __init__(self, name, body, linespan=None, lexspan=None, p=None):
+        super(MapDefinition, self).__init__(linespan=linespan, lexspan=lexspan, p=p)
+        self._fields += ['name', 'body']
+        self.name = name
+        Base.p(self.name, self)
+        self.body = body
+        Base.p(self.body, self)
+
+    def accept(self, visitor):
+        if visitor.visit_EnumDefinition(self):
+            self.v(self.name, visitor)
+            self.v(self.body, visitor)
+
+
 class PolicyDefinition(SourceElement):
     def __init__(self, name, body, linespan=None, lexspan=None, p=None):
         super(PolicyDefinition, self).__init__(linespan=linespan, lexspan=lexspan, p=p)

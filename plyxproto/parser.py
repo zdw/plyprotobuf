@@ -460,6 +460,8 @@ class ProtobufParser(object):
                     | message_extension
                     | enum_definition
                     | policy_definition
+                    | map_definition
+                    | reduce_definition
                     | service_definition
                     | import_directive
                     | package_directive

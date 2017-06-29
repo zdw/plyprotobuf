@@ -65,10 +65,6 @@ class FOLParser(object):
         self.offset = of
         self.lh.offset = of
 
-    def p_empty(self, p):
-        '''empty :'''
-        pass
-
     def p_term_constant(self, p):
         '''term :   FALSE
                     | TRUE'''

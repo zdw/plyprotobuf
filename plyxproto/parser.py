@@ -268,10 +268,10 @@ class ProtobufParser(object):
 
     # TODO: Add directives to link definition
     def p_link_definition(self, p):
-        '''link_definition : field_modifier link_type field_name ARROW dotname slash_name colon_fieldname EQ field_id field_directives SEMI'''
+        '''link_definition : field_modifier link_type field_name policy_opt ARROW dotname slash_name colon_fieldname EQ field_id field_directives SEMI'''
         p[0] = LinkSpec(
-                FieldDefinition(LU.i(p,1), Name('int32'), LU.i(p, 3), LU.i(p, 9), [FieldDirective(Name('type'), Name('link')), FieldDirective(Name('model'),LU.i(p, 5))] + srcPort(LU.i(p,7)) + LU.i(p,10)),
-                LinkDefinition(LU.i(p,2), LU.i(p,3), LU.i(p,5), LU.i(p,6), LU.i(p,7)))
+                FieldDefinition(LU.i(p,1), Name('int32'), LU.i(p, 3), LU.i(p,4), LU.i(p, 10), [FieldDirective(Name('type'), Name('link')), FieldDirective(Name('model'),LU.i(p, 6))] + srcPort(LU.i(p,8)) + LU.i(p,11)),
+                LinkDefinition(LU.i(p,2), LU.i(p,3), LU.i(p,6), LU.i(p,7), LU.i(p,8)))
 
         self.lh.set_parse_object(p[0], p)
 

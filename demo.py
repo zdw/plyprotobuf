@@ -53,8 +53,6 @@ parser = plyproto.ProtobufAnalyzer()
 tests = globals()
 
 for t in tests:
-    import pdb
-    pdb.set_trace()
     if t.startswith('test'):
         print 'parsin %s'%t
         parser.parse_string(globals()[t])

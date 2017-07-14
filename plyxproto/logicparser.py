@@ -9,7 +9,7 @@ import ply.yacc as yacc
 from helpers import LexHelper, LU
 
 class FOLLexer(object):
-    keywords = ('forall', 'exists', 'true', 'false', 'not')
+    keywords = ('forall', 'exists', 'True', 'False', 'not')
 
     tokens = ['ESCAPE', 'COLON', 'IMPLIES', 'OR', 'AND', 'LPAREN', 'RPAREN', 'EQUALS', 'SYMBOL', 'LT', 'RT'] + [k.upper() for k in keywords]
     # literals = '()+-*/=?:,.^|&~!=[]{};<>@%'

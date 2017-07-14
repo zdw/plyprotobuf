@@ -20,7 +20,7 @@ class ProtobufLexer(object):
     keywords = ('double', 'float', 'int32', 'int64', 'uint32', 'uint64', 'sint32', 'sint64',
                 'fixed32', 'fixed64', 'sfixed32', 'sfixed64', 'bool', 'string', 'bytes',
                 'message', 'required', 'optional', 'repeated', 'enum', 'extensions', 'max',  'extend',
-                'to', 'package', '_service', 'rpc', 'returns', 'True', 'False', 'option', 'import', 'manytoone', 'manytomany', 'onetoone', 'policy', 'map', 'reduce')
+                'to', 'package', '_service', 'rpc', 'returns', 'true', 'false', 'option', 'import', 'manytoone', 'manytomany', 'onetoone', 'policy', 'map', 'reduce')
 
     tokens = [
         'POLICYBODY',

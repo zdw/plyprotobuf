@@ -161,7 +161,7 @@ class PolicyDefinition(SourceElement):
         Base.p(self.body, self)
 
     def accept(self, visitor):
-        if visitor.visit_EnumDefinition(self):
+        if visitor.visit_PolicyDefinition(self):
             self.v(self.name, visitor)
             self.v(self.body, visitor)
 

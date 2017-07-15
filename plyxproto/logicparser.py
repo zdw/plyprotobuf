@@ -83,7 +83,7 @@ class FOLParser(object):
         p[0] = p[1]
 
     def p_term_python(self, p):
-        '''term : ESCAPE '''
+        '''term : ESCAPE'''
         p[0] = {'python': p[1]}
 
     def p_fole_group(self, p):

@@ -84,7 +84,7 @@ class FOLParser(object):
 
     def p_term_python(self, p):
         '''term : ESCAPE'''
-        p[0] = {'python': p[1]}
+        p[0] = {'python': p[1].lstrip('{').rstrip('}')}
 
     def p_fole_group(self, p):
         "fole : LPAREN fole RPAREN"

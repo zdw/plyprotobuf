@@ -11,7 +11,7 @@ from helpers import LexHelper, LU
 class FOLLexer(object):
     keywords = ('forall', 'exists', 'True', 'False', 'not')
 
-    tokens = ['ESCAPE', 'COLON', 'IMPLIES', 'OR', 'AND', 'LPAREN', 'RPAREN', 'EQUALS', 'SYMBOL', 'LT', 'RT'] + [k.upper() for k in keywords]
+    tokens = ['STRING_LITERAL', 'NUM', 'ESCAPE', 'COLON', 'IMPLIES', 'OR', 'AND', 'LPAREN', 'RPAREN', 'EQUALS', 'SYMBOL', 'LT', 'RT'] + [k.upper() for k in keywords]
     # literals = '()+-*/=?:,.^|&~!=[]{};<>@%'
 
     t_ignore_LINE_COMMENT = '//.*'
@@ -23,6 +23,8 @@ class FOLLexer(object):
     t_AND = '\\&'
     t_LPAREN = '\\('
     t_RPAREN = '\\)'
+    t_NUM = r'[+-]?\d+(\.\d+)?'
+    t_STRING_LITERAL = r'\"([^\\\n]|(\\.))*?\"'
 
     t_EQUALS = '\\='
 
@@ -65,7 +67,15 @@ class FOLParser(object):
         self.offset = of
         self.lh.offset = of
 
-    def p_term_constant(self, p):
+    def p_term_numeric_constant(self, p):
+        '''term : NUM'''
+        p[0] = p[1]
+
+    def p_term_string_constant(self, p):
+        '''term : STRING_LITERAL'''
+        p[0] = p[1]
+
+    def p_term_boolean_constant(self, p):
         '''term :   FALSE
                     | TRUE'''
         p[0] = p[1]

@@ -36,7 +36,7 @@ class ProtobufLexer(object):
     ] + [k.upper() for k in keywords]
 
 
-    t_POLICYBODY = r'< (.|\n)*? >'
+    t_POLICYBODY = r'< (.|\n)*? [^-]>'
 
     literals = '()+-*/=?:,.^|&~!=[]{};<>@%'
 

@@ -9,7 +9,7 @@ import ply.yacc as yacc
 from helpers import LexHelper, LU
 
 class FOLLexer(object):
-    keywords = ('forall', 'exists', 'True', 'False', 'not')
+    keywords = ('forall', 'exists', 'True', 'False', 'not', 'in')
 
     tokens = ['STRING_LITERAL', 'NUM', 'ESCAPE', 'COLON', 'IMPLIES', 'OR', 'AND', 'LPAREN', 'RPAREN', 'EQUALS', 'SYMBOL', 'LT', 'RT'] + [k.upper() for k in keywords]
     # literals = '()+-*/=?:,.^|&~!=[]{};<>@%'
@@ -47,7 +47,7 @@ class FOLLexer(object):
         t.lexer.lineno += t.value.count('\n')
 
     def t_SYMBOL(self, t):
-        '[A-Za-z_$][\.A-Za-z0-9_+$]*'
+        '[A-Za-z_$][\.A-Za-z2-9_+$]*(\(\))?'
         if t.value in FOLLexer.keywords:
             t.type = t.value.upper()
         return t
@@ -99,6 +99,10 @@ class FOLParser(object):
     def p_fole_group(self, p):
         "fole : LPAREN fole RPAREN"
         p[0] = p[2]
+
+    def p_fole_in(self, p):
+        "fole : term IN term"
+        p[0] = {'in': (p[1], p[3])}
 
     def p_fole_equals(self, p):
         "fole : term EQUALS term"

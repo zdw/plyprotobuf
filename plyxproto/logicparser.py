@@ -11,13 +11,14 @@ from helpers import LexHelper, LU
 class FOLLexer(object):
     keywords = ('forall', 'exists', 'True', 'False', 'not', 'in')
 
-    tokens = ['STRING_LITERAL', 'NUM', 'ESCAPE', 'COLON', 'IMPLIES', 'OR', 'AND', 'LPAREN', 'RPAREN', 'EQUALS', 'SYMBOL', 'LT', 'RT'] + [k.upper() for k in keywords]
+    tokens = ['STRING_LITERAL', 'NUM', 'ESCAPE', 'COLON', 'IMPLIES', 'OR', 'AND', 'LPAREN', 'RPAREN', 'EQUALS', 'SYMBOL', 'LT', 'RT', 'STAR'] + [k.upper() for k in keywords]
     # literals = '()+-*/=?:,.^|&~!=[]{};<>@%'
 
     t_ignore_LINE_COMMENT = '//.*'
     t_COLON = '\\:'
     t_IMPLIES = '\\-\\>'
     t_OR = '\\|'
+    t_STAR = '\\*'
     t_LT = '\\<'
     t_RT = '\\>'
     t_AND = '\\&'
@@ -47,7 +48,7 @@ class FOLLexer(object):
         t.lexer.lineno += t.value.count('\n')
 
     def t_SYMBOL(self, t):
-        '[A-Za-z_$][\.A-Za-z2-9_+$]*(\(\))?'
+        '[A-Za-z_$][\.A-Za-z0-9_+$]*(\(\))?'
         if t.value in FOLLexer.keywords:
             t.type = t.value.upper()
         return t
@@ -79,6 +80,10 @@ class FOLParser(object):
         '''term :   FALSE
                     | TRUE'''
         p[0] = p[1]
+
+    def p_term_policy_function(self, p):
+        '''term : STAR SYMBOL LPAREN SYMBOL RPAREN'''
+        p[0] = {'policy': [p[2], p[4]]}
 
     def p_fole_not(self, p):
         '''fole : NOT fole'''

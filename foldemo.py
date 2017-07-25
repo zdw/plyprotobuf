@@ -8,6 +8,7 @@ test_2 = "<a | b>"
 test_3 = "<exists a: x=y>"
 test_4 = "<forall a: exists b: x.b=y.b>"
 test_5 = "<forall a: {{ a.endswith('good') }}>"
+test_6 = "< *doit(foo) >"
 
 DEBUG = 0
 

@@ -10,7 +10,7 @@ https://github.com/opencord/xos
 from setuptools import setup
 
 setup(name='plyxproto',
-      version='2.1.0',
+      version='2.2.0',
       description='xproto parser and processor',
       author='Dusan Klinec (original protobuf parser), Sapan Bhatia (xproto extensions)',
       author_email='sapan@opennetworking.org',

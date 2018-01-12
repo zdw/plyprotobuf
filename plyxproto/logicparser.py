@@ -8,6 +8,11 @@ import ply.yacc as yacc
 
 from helpers import LexHelper, LU
 
+class FOLParsingError(Exception):
+    def __init__(self, message, error_range):
+        super(FOLParsingError, self).__init__(message)
+        self.error_range = error_range
+
 class FOLLexer(object):
     keywords = ('forall', 'exists', 'True', 'False', 'not', 'in')
 
@@ -41,7 +46,10 @@ class FOLLexer(object):
         r'(\r\n)+'
         t.lexer.lineno += len(t.value) / 2
 
-    t_ESCAPE = r'{{ (.|\n)*? }}'
+    def t_ESCAPE(self, t):
+        r'{{ (.|\n)*? }}'
+        t.lexer.lineno += t.value.count('\n')
+        return t
 
     def t_BLOCK_COMMENT(self, t):
         r'/\*(.|\n)*?\*/'
@@ -124,11 +132,20 @@ class FOLParser(object):
                       | EXISTS SYMBOL COLON fole'''
         p[0] = {p[1]: [p[2], p[4]]}
 
-    
     def p_goal(self, p):
         '''goal : LT fole RT'''
         p[0] = p[2]
 
     def p_error(self, p):
-        print('error: {}'.format(p))
+        error = 'error: {}'.format(p)
+        raise FOLParsingError(error, (p.lineno,p.lexpos,len(p.value)))
 
+    precedence = (
+                  ("right", "IMPLIES"),
+                  ("left", "OR"),
+                  ("left", "AND"),
+                  ("right", "COLON"),
+                  ("right", "NOT"),
+                  ("right", "STAR"),
+                  ("right", "ESCAPE"),
+                  ("nonassoc", "EQUALS", "IN"))

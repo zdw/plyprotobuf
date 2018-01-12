@@ -10,11 +10,17 @@ from .model import *
 
 import pdb
 from helpers import LexHelper, LU
-from logicparser import FOLParser, FOLLexer
+from logicparser import FOLParser, FOLLexer, FOLParsingError
 import ast
 
 class PythonError(Exception):
     pass
+
+class ParsingError(Exception):
+    def __init__(self, message, error_range):
+        super(ParsingError, self).__init__(message)
+        self.error_range = error_range
+
 
 class ProtobufLexer(object):
     keywords = ('double', 'float', 'int32', 'int64', 'uint32', 'uint64', 'sint32', 'sint64',
@@ -36,7 +42,10 @@ class ProtobufLexer(object):
     ] + [k.upper() for k in keywords]
 
 
-    t_POLICYBODY = r'< (.|\n)*? [^-]>'
+    def t_POLICYBODY(self, t):
+        r'< (.|\n)*? [^-]>'
+        t.lexer.lineno += t.value.count('\n')
+        return t
 
     literals = '()+-*/=?:,.^|&~!=[]{};<>@%'
 
@@ -99,7 +108,7 @@ class ProtobufParser(object):
     offset = 0
     lh = LexHelper()
     fol_lexer = lex.lex(module=FOLLexer())#, optimize=1)
-    fol_parser = yacc.yacc(module=FOLParser(), start='goal')
+    fol_parser = yacc.yacc(module=FOLParser(), start='goal', outputdir='/tmp', debug=0)
 
     def setOffset(self, of):
         self.offset = of
@@ -334,7 +343,11 @@ class ProtobufParser(object):
 
     def p_policy_definition(self, p):
         '''policy_definition : POLICY NAME POLICYBODY'''
-        fol = self.fol_parser.parse(p[3], lexer = self.fol_lexer)
+        try:
+            fol = self.fol_parser.parse(p[3], lexer = self.fol_lexer)
+        except FOLParsingError, e:
+            lineno, lexpos, length = e.error_range
+            raise ParsingError("Policy parsing error in policy %s"%p[2], (p.lineno(3) + lineno,lexpos + p.lexpos(3), length))
         p[0] = PolicyDefinition(Name(LU.i(p, 2)), fol)
         self.lh.set_parse_object(p[0], p)
 
@@ -492,13 +505,13 @@ class ProtobufParser(object):
         p[0] = p[2]
 
     def p_error(self, p):
-        print('error: {}'.format(p))
+        raise ParsingError("Parsing Error", (p.lineno,p.lexpos,len(p.value)))
 
 class ProtobufAnalyzer(object):
 
     def __init__(self):
-        self.lexer = lex.lex(module=ProtobufLexer())#, optimize=1)
-        self.parser = yacc.yacc(module=ProtobufParser(), start='goal', debug=0, outputdir='/tmp')#optimize=1)
+        self.lexer = lex.lex(module=ProtobufLexer())
+        self.parser = yacc.yacc(module=ProtobufParser(), start='goal', debug=0, outputdir='/tmp')
 
     def tokenize_string(self, code):
         self.lexer.input(code)

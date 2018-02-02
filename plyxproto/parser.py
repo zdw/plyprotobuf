@@ -6,41 +6,102 @@ __version__ = "1.0"
 
 import ply.lex as lex
 import ply.yacc as yacc
-from .model import *
 
-import pdb
+from .model import (
+    DotName,
+    EnumDefinition,
+    EnumFieldDefinition,
+    ExtensionsDirective,
+    ExtensionsMax,
+    FieldDefinition,
+    FieldDirective,
+    FieldType,
+    ImportStatement,
+    LinkDefinition,
+    LinkSpec,
+    Literal,
+    MapDefinition,
+    MessageDefinition,
+    MessageExtension,
+    MethodDefinition,
+    Name,
+    OptionStatement,
+    PackageStatement,
+    PolicyDefinition,
+    ProtoFile,
+    ReduceDefinition,
+    ServiceDefinition,
+)
+
 from helpers import LexHelper, LU
 from logicparser import FOLParser, FOLLexer, FOLParsingError
 import ast
 
+
 class PythonError(Exception):
     pass
 
+
 class ParsingError(Exception):
+
     def __init__(self, message, error_range):
         super(ParsingError, self).__init__(message)
         self.error_range = error_range
 
 
 class ProtobufLexer(object):
-    keywords = ('double', 'float', 'int32', 'int64', 'uint32', 'uint64', 'sint32', 'sint64',
-                'fixed32', 'fixed64', 'sfixed32', 'sfixed64', 'bool', 'string', 'bytes',
-                'message', 'required', 'optional', 'repeated', 'enum', 'extensions', 'max',  'extend',
-                'to', 'package', '_service', 'rpc', 'returns', 'true', 'false', 'option', 'import', 'manytoone', 'manytomany', 'onetoone', 'policy', 'map', 'reduce')
+    keywords = (
+        'double',
+        'float',
+        'int32',
+        'int64',
+        'uint32',
+        'uint64',
+        'sint32',
+        'sint64',
+        'fixed32',
+        'fixed64',
+        'sfixed32',
+        'sfixed64',
+        'bool',
+        'string',
+        'bytes',
+        'message',
+        'required',
+        'optional',
+        'repeated',
+        'enum',
+        'extensions',
+        'max',
+        'extend',
+        'to',
+        'package',
+        '_service',
+        'rpc',
+        'returns',
+        'true',
+        'false',
+        'option',
+        'import',
+        'manytoone',
+        'manytomany',
+        'onetoone',
+        'policy',
+        'map',
+        'reduce')
 
     tokens = [
         'POLICYBODY',
         'NAME',
         'NUM',
         'STRING_LITERAL',
-        #'LINE_COMMENT', 'BLOCK_COMMENT',
+        # 'LINE_COMMENT', 'BLOCK_COMMENT',
         'LBRACE', 'RBRACE', 'LBRACK', 'RBRACK',
         'LPAR', 'RPAR', 'EQ', 'SEMI', 'DOT',
         'ARROW', 'COLON', 'COMMA', 'SLASH',
         'DOUBLECOLON',
         'STARTTOKEN'
     ] + [k.upper() for k in keywords]
-
 
     def t_POLICYBODY(self, t):
         r'< (.|\n)*? [^-]>'
@@ -53,6 +114,7 @@ class ProtobufLexer(object):
     t_STRING_LITERAL = r'\"([^\\\n]|(\\.))*?\"'
 
     t_ignore_LINE_COMMENT = '//.*'
+
     def t_BLOCK_COMMENT(self, t):
         r'/\*(.|\n)*?\*/'
         t.lexer.lineno += t.value.count('\n')
@@ -61,7 +123,6 @@ class ProtobufLexer(object):
     t_RBRACE = '}'
     t_LBRACK = '\\['
     t_RBRACK = '\\]'
-
 
     t_LPAR = '\\('
     t_RPAR = '\\)'
@@ -79,7 +140,7 @@ class ProtobufLexer(object):
     def t_NAME(self, t):
         '[A-Za-z_$][A-Za-z0-9_+$]*'
         if t.value in ProtobufLexer.keywords:
-            #print "type: %s val %s t %s" % (t.type, t.value, t)
+            # print "type: %s val %s t %s" % (t.type, t.value, t)
             t.type = t.value.upper()
         return t
 
@@ -92,13 +153,14 @@ class ProtobufLexer(object):
         t.lexer.lineno += len(t.value) / 2
 
     def t_error(self, t):
-        print("Illegal character '{}' ({}) in line {}".format(t.value[0], hex(ord(t.value[0])), t.lexer.lineno))
+        print("Illegal character '{}' ({}) in line {}".format(
+            t.value[0], hex(ord(t.value[0])), t.lexer.lineno))
         t.lexer.skip(1)
 
 
 def srcPort(x):
     if (x):
-        return [FieldDirective(Name('port'),x)]
+        return [FieldDirective(Name('port'), x)]
     else:
         return []
 
@@ -107,8 +169,12 @@ class ProtobufParser(object):
     tokens = ProtobufLexer.tokens
     offset = 0
     lh = LexHelper()
-    fol_lexer = lex.lex(module=FOLLexer())#, optimize=1)
-    fol_parser = yacc.yacc(module=FOLParser(), start='goal', outputdir='/tmp', debug=0)
+    fol_lexer = lex.lex(module=FOLLexer())  # , optimize=1)
+    fol_parser = yacc.yacc(
+        module=FOLParser(),
+        start='goal',
+        outputdir='/tmp',
+        debug=0)
 
     def setOffset(self, of):
         self.offset = of
@@ -118,11 +184,11 @@ class ProtobufParser(object):
         '''empty :'''
         pass
 
-    def p_field_modifier(self,p):
+    def p_field_modifier(self, p):
         '''field_modifier : REQUIRED
                           | OPTIONAL
                           | REPEATED'''
-        p[0] = LU.i(p,1)
+        p[0] = LU.i(p, 1)
 
     def p_primitive_type(self, p):
         '''primitive_type : DOUBLE
@@ -140,23 +206,23 @@ class ProtobufParser(object):
                           | BOOL
                           | STRING
                           | BYTES'''
-        p[0] = LU.i(p,1)
+        p[0] = LU.i(p, 1)
 
     def p_link_type(self, p):
         '''link_type      : ONETOONE
                           | MANYTOONE
                           | MANYTOMANY'''
-        p[0] = LU.i(p,1)
+        p[0] = LU.i(p, 1)
 
     def p_field_id(self, p):
         '''field_id : NUM'''
-        p[0] = LU.i(p,1)
+        p[0] = LU.i(p, 1)
 
     def p_rvalue(self, p):
         '''rvalue : NUM
                   | TRUE
                   | FALSE'''
-        p[0] = LU.i(p,1)
+        p[0] = LU.i(p, 1)
 
     def p_rvalue3(self, p):
         '''rvalue : STRING_LITERAL'''
@@ -177,7 +243,7 @@ class ProtobufParser(object):
     def p_field_directives(self, p):
         '''field_directives : LBRACK field_directive_times RBRACK'''
         p[0] = p[2]
-        #self.lh.set_parse_object(p[0], p)
+        # self.lh.set_parse_object(p[0], p)
 
     def p_field_directive(self, p):
         '''field_directive : NAME EQ rvalue'''
@@ -204,13 +270,13 @@ class ProtobufParser(object):
         '''csv : empty'''
 
     def p_csv(self, p):
-        '''csv : dotname 
+        '''csv : dotname
                | csv COMMA dotname'''
 
         if len(p) == 2:
-            p[0] = [LU(p,1)]
+            p[0] = [LU(p, 1)]
         else:
-            p[0] = p[1] + [LU(p,3)]
+            p[0] = p[1] + [LU(p, 3)]
 
     def p_field_directive_times(self, p):
         '''field_directive_times : field_directive_plus'''
@@ -224,17 +290,17 @@ class ProtobufParser(object):
         '''field_directive_plus : field_directive
                                | field_directive_plus COMMA field_directive'''
         if len(p) == 2:
-            p[0] = [LU(p,1)]
+            p[0] = [LU(p, 1)]
         else:
-            p[0] = p[1] + [LU(p,3)]
+            p[0] = p[1] + [LU(p, 3)]
 
     def p_dotname(self, p):
         '''dotname : NAME
                    | dotname DOT NAME'''
         if len(p) == 2:
-            p[0] = [LU(p,1)]
+            p[0] = [LU(p, 1)]
         else:
-            p[0] = p[1] + [LU(p,3)]
+            p[0] = p[1] + [LU(p, 3)]
 
     # Hack for cases when there is a field named 'message' or 'max'
     def p_fieldName(self, p):
@@ -242,13 +308,13 @@ class ProtobufParser(object):
                       | NAME
                       | MESSAGE
                       | MAX'''
-        p[0] = Name(LU.i(p,1))
+        p[0] = Name(LU.i(p, 1))
         self.lh.set_parse_object(p[0], p)
         p[0].deriveLex()
 
     def p_field_type(self, p):
         '''field_type : primitive_type'''
-        p[0] = FieldType(LU.i(p,1))
+        p[0] = FieldType(LU.i(p, 1))
         self.lh.set_parse_object(p[0], p)
 
     def p_field_type2(self, p):
@@ -260,7 +326,7 @@ class ProtobufParser(object):
     def p_slash_name(self, p):
         '''slash_name : SLASH dotname'''
         p[0] = p[2]
-        #self.lh.set_parse_object(p[0], p)
+        # self.lh.set_parse_object(p[0], p)
 
     def p_slash_name2(self, p):
         '''slash_name : empty'''
@@ -279,21 +345,45 @@ class ProtobufParser(object):
     def p_link_definition(self, p):
         '''link_definition : field_modifier link_type field_name policy_opt ARROW dotname slash_name colon_fieldname EQ field_id field_directives SEMI'''
         p[0] = LinkSpec(
-                FieldDefinition(LU.i(p,1), Name('int32'), LU.i(p, 3), LU.i(p,4), LU.i(p, 10), [FieldDirective(Name('type'), Name('link')), FieldDirective(Name('model'),LU.i(p, 6))] + srcPort(LU.i(p,8)) + LU.i(p,11)),
-                LinkDefinition(LU.i(p,2), LU.i(p,3), LU.i(p,6), LU.i(p,7), LU.i(p,8)))
+            FieldDefinition(
+                LU.i(
+                    p, 1), Name('int32'), LU.i(
+                    p, 3), LU.i(
+                    p, 4), LU.i(
+                        p, 10), [
+                            FieldDirective(
+                                Name('type'), Name('link')), FieldDirective(
+                                    Name('model'), LU.i(
+                                        p, 6))] + srcPort(
+                                            LU.i(
+                                                p, 8)) + LU.i(
+                                                    p, 11)), LinkDefinition(
+                                                        LU.i(
+                                                            p, 2), LU.i(
+                                                                p, 3), LU.i(
+                                                                    p, 6), LU.i(
+                                                                        p, 7), LU.i(
+                                                                            p, 8)))
 
         self.lh.set_parse_object(p[0], p)
 
     # Root of the field declaration.
     def p_field_definition(self, p):
         '''field_definition : field_modifier field_type field_name policy_opt EQ field_id field_directives SEMI'''
-        p[0] = FieldDefinition(LU.i(p,1), LU.i(p,2), LU.i(p, 3), LU.i(p,4), LU.i(p,6), LU.i(p,7))
+        p[0] = FieldDefinition(
+            LU.i(
+                p, 1), LU.i(
+                p, 2), LU.i(
+                p, 3), LU.i(
+                    p, 4), LU.i(
+                        p, 6), LU.i(
+                            p, 7))
         self.lh.set_parse_object(p[0], p)
 
     # Root of the enum field declaration.
     def p_enum_field(self, p):
         '''enum_field : field_name EQ NUM SEMI'''
-        p[0] = EnumFieldDefinition(LU.i(p, 1), LU.i(p,3))
+        p[0] = EnumFieldDefinition(LU.i(p, 1), LU.i(p, 3))
         self.lh.set_parse_object(p[0], p)
 
     def p_enum_body_part(self, p):
@@ -344,10 +434,12 @@ class ProtobufParser(object):
     def p_policy_definition(self, p):
         '''policy_definition : POLICY NAME POLICYBODY'''
         try:
-            fol = self.fol_parser.parse(p[3], lexer = self.fol_lexer)
-        except FOLParsingError, e:
+            fol = self.fol_parser.parse(p[3], lexer=self.fol_lexer)
+        except FOLParsingError as e:
             lineno, lexpos, length = e.error_range
-            raise ParsingError("Policy parsing error in policy %s"%p[2], (p.lineno(3) + lineno,lexpos + p.lexpos(3), length))
+            raise ParsingError(
+                "Policy parsing error in policy %s" %
+                p[2], (p.lineno(3) + lineno, lexpos + p.lexpos(3), length))
         p[0] = PolicyDefinition(Name(LU.i(p, 2)), fol)
         self.lh.set_parse_object(p[0], p)
 
@@ -355,7 +447,7 @@ class ProtobufParser(object):
     # enum_definition ::= 'enum' ident '{' { ident '=' integer ';' }* '}'
     def p_enum_definition(self, p):
         '''enum_definition : ENUM NAME LBRACE enum_body_opt RBRACE'''
-        p[0] = EnumDefinition(Name(LU.i(p, 2)), LU.i(p,4))
+        p[0] = EnumDefinition(Name(LU.i(p, 2)), LU.i(p, 4))
         self.lh.set_parse_object(p[0], p)
 
     def p_extensions_to(self, p):
@@ -370,13 +462,13 @@ class ProtobufParser(object):
     # extensions_definition ::= 'extensions' integer 'to' integer ';'
     def p_extensions_definition(self, p):
         '''extensions_definition : EXTENSIONS NUM TO extensions_to SEMI'''
-        p[0] = ExtensionsDirective(LU.i(p,2), LU.i(p,4))
+        p[0] = ExtensionsDirective(LU.i(p, 2), LU.i(p, 4))
         self.lh.set_parse_object(p[0], p)
 
     # message_extension ::= 'extend' ident '{' message_body '}'
     def p_message_extension(self, p):
         '''message_extension : EXTEND NAME LBRACE message_body RBRACE'''
-        p[0] = MessageExtension(Name(LU.i(p, 2)), LU.i(p,4))
+        p[0] = MessageExtension(Name(LU.i(p, 2)), LU.i(p, 4))
         self.lh.set_parse_object(p[0], p)
 
     def p_message_body_part(self, p):
@@ -389,12 +481,14 @@ class ProtobufParser(object):
                            | message_extension'''
         p[0] = p[1]
 
-    # message_body ::= { field_definition | enum_definition | message_definition | extensions_definition | message_extension }*
+    # message_body ::= { field_definition | enum_definition |
+    # message_definition | extensions_definition | message_extension }*
     def p_message_body(self, p):
         '''message_body : empty'''
         p[0] = []
 
-    # message_body ::= { field_definition | enum_definition | message_definition | extensions_definition | message_extension }*
+    # message_body ::= { field_definition | enum_definition |
+    # message_definition | extensions_definition | message_extension }*
     def p_message_body2(self, p):
         '''message_body : message_body_part
                       | message_body message_body_part'''
@@ -407,13 +501,27 @@ class ProtobufParser(object):
     # message_definition = MESSAGE_ - ident("messageId") + LBRACE + message_body("body") + RBRACE
     def p_message_definition(self, p):
         '''message_definition : MESSAGE NAME policy_opt csv_expr LBRACE message_body RBRACE'''
-        p[0] = MessageDefinition(Name(LU.i(p, 2)), LU.i(p,3), LU.i(p, 4), LU.i(p,6))
+        p[0] = MessageDefinition(
+            Name(
+                LU.i(
+                    p, 2)), LU.i(
+                p, 3), LU.i(
+                    p, 4), LU.i(
+                        p, 6))
         self.lh.set_parse_object(p[0], p)
 
-    # method_definition ::= 'rpc' ident '(' [ ident ] ')' 'returns' '(' [ ident ] ')' ';'
+    # method_definition ::= 'rpc' ident '(' [ ident ] ')' 'returns' '(' [
+    # ident ] ')' ';'
     def p_method_definition(self, p):
         '''method_definition : RPC NAME LPAR NAME RPAR RETURNS LPAR NAME RPAR'''
-        p[0] = MethodDefinition(Name(LU.i(p, 2)), Name(LU.i(p, 4)), Name(LU.i(p, 8)))
+        p[0] = MethodDefinition(
+            Name(
+                LU.i(
+                    p, 2)), Name(
+                LU.i(
+                    p, 4)), Name(
+                        LU.i(
+                            p, 8)))
         self.lh.set_parse_object(p[0], p)
 
     def p_method_definition_opt(self, p):
@@ -432,11 +540,11 @@ class ProtobufParser(object):
     # service_definition = SERVICE_ - ident("serviceName") + LBRACE + ZeroOrMore(Group(method_definition)) + RBRACE
     def p_service_definition(self, p):
         '''service_definition : _SERVICE NAME LBRACE method_definition_opt RBRACE'''
-        p[0] = ServiceDefinition(Name(LU.i(p, 2)), LU.i(p,4))
+        p[0] = ServiceDefinition(Name(LU.i(p, 2)), LU.i(p, 4))
         self.lh.set_parse_object(p[0], p)
 
     # package_directive ::= 'package' ident [ '.' ident]* ';'
-    def p_package_directive(self,p):
+    def p_package_directive(self, p):
         '''package_directive : PACKAGE dotname SEMI'''
         p[0] = PackageStatement(Name(LU.i(p, 2)))
         self.lh.set_parse_object(p[0], p)
@@ -444,7 +552,7 @@ class ProtobufParser(object):
     # import_directive = IMPORT_ - quotedString("importFileSpec") + SEMI
     def p_import_directive(self, p):
         '''import_directive : IMPORT STRING_LITERAL SEMI'''
-        p[0] = ImportStatement(Literal(LU.i(p,2)))
+        p[0] = ImportStatement(Literal(LU.i(p, 2)))
         self.lh.set_parse_object(p[0], p)
 
     def p_option_rvalue(self, p):
@@ -455,20 +563,20 @@ class ProtobufParser(object):
 
     def p_option_rvalue2(self, p):
         '''option_rvalue : STRING_LITERAL'''
-        p[0] = Literal(LU(p,1))
+        p[0] = Literal(LU(p, 1))
 
     def p_option_rvalue3(self, p):
         '''option_rvalue : NAME'''
-        p[0] = Name(LU.i(p,1))
+        p[0] = Name(LU.i(p, 1))
 
     # option_directive = OPTION_ - ident("optionName") + EQ + quotedString("optionValue") + SEMI
     def p_option_directive(self, p):
         '''option_directive : OPTION NAME EQ option_rvalue SEMI'''
-        p[0] = OptionStatement(Name(LU.i(p, 2)), LU.i(p,4))
+        p[0] = OptionStatement(Name(LU.i(p, 2)), LU.i(p, 4))
         self.lh.set_parse_object(p[0], p)
 
     # topLevelStatement = Group(message_definition | message_extension | enum_definition | service_definition | import_directive | option_directive | package_definition)
-    def p_topLevel(self,p):
+    def p_topLevel(self, p):
         '''topLevel : message_definition
                     | message_extension
                     | enum_definition
@@ -496,7 +604,7 @@ class ProtobufParser(object):
     # parser = Optional(package_directive) + ZeroOrMore(topLevelStatement)
     def p_protofile(self, p):
         '''protofile : statements'''
-        p[0] = ProtoFile(LU.i(p,1))
+        p[0] = ProtoFile(LU.i(p, 1))
         self.lh.set_parse_object(p[0], p)
 
     # Parsing starting point
@@ -505,13 +613,18 @@ class ProtobufParser(object):
         p[0] = p[2]
 
     def p_error(self, p):
-        raise ParsingError("Parsing Error", (p.lineno,p.lexpos,len(p.value)))
+        raise ParsingError("Parsing Error", (p.lineno, p.lexpos, len(p.value)))
+
 
 class ProtobufAnalyzer(object):
 
     def __init__(self):
         self.lexer = lex.lex(module=ProtobufLexer())
-        self.parser = yacc.yacc(module=ProtobufParser(), start='goal', debug=0, outputdir='/tmp')
+        self.parser = yacc.yacc(
+            module=ProtobufParser(),
+            start='goal',
+            debug=0,
+            outputdir='/tmp')
 
     def tokenize_string(self, code):
         self.lexer.input(code)
@@ -519,7 +632,7 @@ class ProtobufAnalyzer(object):
             print(token)
 
     def tokenize_file(self, _file):
-        if type(_file) == str:
+        if isinstance(_file, str):
             _file = file(_file)
         content = ''
         for line in _file:
@@ -532,7 +645,7 @@ class ProtobufAnalyzer(object):
         return self.parser.parse(prefix + code, lexer=self.lexer, debug=debug)
 
     def parse_file(self, _file, debug=0):
-        if type(_file) == str:
+        if isinstance(_file, str):
             _file = file(_file)
         content = ''
         for line in _file:

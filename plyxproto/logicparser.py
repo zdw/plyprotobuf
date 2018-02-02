@@ -3,20 +3,33 @@ __author__ = "Sapan Bhatia"
 __copyright__ = "Copyright (C) 2017 Open Networking Lab"
 __version__ = "1.0"
 
-import ply.lex as lex
-import ply.yacc as yacc
+from helpers import LexHelper
 
-from helpers import LexHelper, LU
 
 class FOLParsingError(Exception):
+
     def __init__(self, message, error_range):
         super(FOLParsingError, self).__init__(message)
         self.error_range = error_range
 
+
 class FOLLexer(object):
     keywords = ('forall', 'exists', 'True', 'False', 'not', 'in')
 
-    tokens = ['STRING_LITERAL', 'NUM', 'ESCAPE', 'COLON', 'IMPLIES', 'OR', 'AND', 'LPAREN', 'RPAREN', 'EQUALS', 'SYMBOL', 'LT', 'RT', 'STAR'] + [k.upper() for k in keywords]
+    tokens = ['STRING_LITERAL',
+              'NUM',
+              'ESCAPE',
+              'COLON',
+              'IMPLIES',
+              'OR',
+              'AND',
+              'LPAREN',
+              'RPAREN',
+              'EQUALS',
+              'SYMBOL',
+              'LT',
+              'RT',
+              'STAR'] + [k.upper() for k in keywords]
     # literals = '()+-*/=?:,.^|&~!=[]{};<>@%'
 
     t_ignore_LINE_COMMENT = '//.*'
@@ -62,11 +75,11 @@ class FOLLexer(object):
         return t
 
     def t_error(self, t):
-        print("Illegal character '{}' ({}) in line {}".format(t.value[0], hex(ord(t.value[0])), t.lexer.lineno))
+        print("Illegal character '{}' ({}) in line {}".format(
+            t.value[0], hex(ord(t.value[0])), t.lexer.lineno))
         t.lexer.skip(1)
- 
-    
-    
+
+
 class FOLParser(object):
     tokens = FOLLexer.tokens
     offset = 0
@@ -138,14 +151,14 @@ class FOLParser(object):
 
     def p_error(self, p):
         error = 'error: {}'.format(p)
-        raise FOLParsingError(error, (p.lineno,p.lexpos,len(p.value)))
+        raise FOLParsingError(error, (p.lineno, p.lexpos, len(p.value)))
 
     precedence = (
-                  ("right", "IMPLIES"),
-                  ("left", "OR"),
-                  ("left", "AND"),
-                  ("right", "COLON"),
-                  ("right", "NOT"),
-                  ("right", "STAR"),
-                  ("right", "ESCAPE"),
-                  ("nonassoc", "EQUALS", "IN"))
+        ("right", "IMPLIES"),
+        ("left", "OR"),
+        ("left", "AND"),
+        ("right", "COLON"),
+        ("right", "NOT"),
+        ("right", "STAR"),
+        ("right", "ESCAPE"),
+        ("nonassoc", "EQUALS", "IN"))

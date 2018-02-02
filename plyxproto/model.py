@@ -1,8 +1,15 @@
 from helpers import Base, SourceElement
 
+
 class PackageStatement(SourceElement):
+
     def __init__(self, name, linespan=None, lexspan=None, p=None):
-        super(PackageStatement, self).__init__(linespan=linespan, lexspan=lexspan, p=p)
+        super(
+            PackageStatement,
+            self).__init__(
+            linespan=linespan,
+            lexspan=lexspan,
+            p=p)
         self._fields += ['name']
         self.name = name
         Base.p(self.name, self)
@@ -10,9 +17,16 @@ class PackageStatement(SourceElement):
     def accept(self, visitor):
         visitor.visit_PackageStatement(self)
 
+
 class ImportStatement(SourceElement):
+
     def __init__(self, name, linespan=None, lexspan=None, p=None):
-        super(ImportStatement, self).__init__(linespan=linespan, lexspan=lexspan, p=p)
+        super(
+            ImportStatement,
+            self).__init__(
+            linespan=linespan,
+            lexspan=lexspan,
+            p=p)
         self._fields += ['name']
         self.name = name
         Base.p(self.name, self)
@@ -20,9 +34,16 @@ class ImportStatement(SourceElement):
     def accept(self, visitor):
         visitor.visit_ImportStatement(self)
 
+
 class OptionStatement(SourceElement):
+
     def __init__(self, name, value, linespan=None, lexspan=None, p=None):
-        super(OptionStatement, self).__init__(linespan=linespan, lexspan=lexspan, p=p)
+        super(
+            OptionStatement,
+            self).__init__(
+            linespan=linespan,
+            lexspan=lexspan,
+            p=p)
         self._fields += ['name', 'value']
         self.name = name
         Base.p(self.name, self)
@@ -32,9 +53,16 @@ class OptionStatement(SourceElement):
     def accept(self, visitor):
         visitor.visit_OptionStatement(self)
 
+
 class FieldDirective(SourceElement):
+
     def __init__(self, name, value, linespan=None, lexspan=None, p=None):
-        super(FieldDirective, self).__init__(linespan=linespan, lexspan=lexspan, p=p)
+        super(
+            FieldDirective,
+            self).__init__(
+            linespan=linespan,
+            lexspan=lexspan,
+            p=p)
         self._fields += ['name', 'value']
         self.name = name
         Base.p(self.name, self)
@@ -47,9 +75,16 @@ class FieldDirective(SourceElement):
             self.v(self.value, visitor)
             visitor.visit_FieldDirective_post(self)
 
+
 class FieldType(SourceElement):
+
     def __init__(self, name, linespan=None, lexspan=None, p=None):
-        super(FieldType, self).__init__(linespan=linespan, lexspan=lexspan, p=p)
+        super(
+            FieldType,
+            self).__init__(
+            linespan=linespan,
+            lexspan=lexspan,
+            p=p)
         self._fields += ['name']
         self.name = name
         Base.p(self.name, self)
@@ -58,10 +93,27 @@ class FieldType(SourceElement):
         if visitor.visit_FieldType(self):
             self.v(self.name, visitor)
 
+
 class LinkDefinition(SourceElement):
-    def __init__(self, link_type, src_port, name, through, dst_port, linespan=None, lexspan=None, p=None):
-        super(LinkDefinition, self).__init__(linespan=linespan, lexspan=lexspan, p=p)
-        self._fields += ['link_type', 'src_port', 'name', 'dst_port', 'through']
+
+    def __init__(
+            self,
+            link_type,
+            src_port,
+            name,
+            through,
+            dst_port,
+            linespan=None,
+            lexspan=None,
+            p=None):
+        super(
+            LinkDefinition,
+            self).__init__(
+            linespan=linespan,
+            lexspan=lexspan,
+            p=p)
+        self._fields += ['link_type', 'src_port',
+                         'name', 'dst_port', 'through']
         self.link_type = link_type
         Base.p(self.link_type, self)
 
@@ -78,12 +130,30 @@ class LinkDefinition(SourceElement):
         Base.p(self.dst_port, self)
 
     def accept(self, visitor):
-         visitor.visit_LinkDefinition(self)
+        visitor.visit_LinkDefinition(self)
+
 
 class FieldDefinition(SourceElement):
-    def __init__(self, field_modifier, ftype, name, policy, fieldId, fieldDirective, linespan=None, lexspan=None, p=None):
-        super(FieldDefinition, self).__init__(linespan=linespan, lexspan=lexspan, p=p)
-        self._fields += ['field_modifier', 'ftype', 'name', 'fieldId', 'policy', 'fieldDirective']
+
+    def __init__(
+            self,
+            field_modifier,
+            ftype,
+            name,
+            policy,
+            fieldId,
+            fieldDirective,
+            linespan=None,
+            lexspan=None,
+            p=None):
+        super(
+            FieldDefinition,
+            self).__init__(
+            linespan=linespan,
+            lexspan=lexspan,
+            p=p)
+        self._fields += ['field_modifier', 'ftype',
+                         'name', 'fieldId', 'policy', 'fieldDirective']
         self.name = name
         Base.p(self.name, self)
         self.field_modifier = field_modifier
@@ -107,9 +177,16 @@ class FieldDefinition(SourceElement):
             self.v(self.fieldDirective, visitor)
             visitor.visit_FieldDefinition_post(self)
 
+
 class EnumFieldDefinition(SourceElement):
+
     def __init__(self, name, fieldId, linespan=None, lexspan=None, p=None):
-        super(EnumFieldDefinition, self).__init__(linespan=linespan, lexspan=lexspan, p=p)
+        super(
+            EnumFieldDefinition,
+            self).__init__(
+            linespan=linespan,
+            lexspan=lexspan,
+            p=p)
         self._fields += ['name', 'fieldId']
         self.name = name
         Base.p(self.name, self)
@@ -121,9 +198,16 @@ class EnumFieldDefinition(SourceElement):
             self.v(self.name, visitor)
             self.v(self.fieldId, visitor)
 
+
 class ReduceDefinition(SourceElement):
+
     def __init__(self, name, body, linespan=None, lexspan=None, p=None):
-        super(ReduceDefinition, self).__init__(linespan=linespan, lexspan=lexspan, p=p)
+        super(
+            ReduceDefinition,
+            self).__init__(
+            linespan=linespan,
+            lexspan=lexspan,
+            p=p)
         self._fields += ['name', 'body']
         self.name = name
         Base.p(self.name, self)
@@ -137,8 +221,14 @@ class ReduceDefinition(SourceElement):
 
 
 class MapDefinition(SourceElement):
+
     def __init__(self, name, body, linespan=None, lexspan=None, p=None):
-        super(MapDefinition, self).__init__(linespan=linespan, lexspan=lexspan, p=p)
+        super(
+            MapDefinition,
+            self).__init__(
+            linespan=linespan,
+            lexspan=lexspan,
+            p=p)
         self._fields += ['name', 'body']
         self.name = name
         Base.p(self.name, self)
@@ -152,8 +242,14 @@ class MapDefinition(SourceElement):
 
 
 class PolicyDefinition(SourceElement):
+
     def __init__(self, name, body, linespan=None, lexspan=None, p=None):
-        super(PolicyDefinition, self).__init__(linespan=linespan, lexspan=lexspan, p=p)
+        super(
+            PolicyDefinition,
+            self).__init__(
+            linespan=linespan,
+            lexspan=lexspan,
+            p=p)
         self._fields += ['name', 'body']
         self.name = name
         Base.p(self.name, self)
@@ -165,9 +261,16 @@ class PolicyDefinition(SourceElement):
             self.v(self.name, visitor)
             self.v(self.body, visitor)
 
+
 class EnumDefinition(SourceElement):
+
     def __init__(self, name, body, linespan=None, lexspan=None, p=None):
-        super(EnumDefinition, self).__init__(linespan=linespan, lexspan=lexspan, p=p)
+        super(
+            EnumDefinition,
+            self).__init__(
+            linespan=linespan,
+            lexspan=lexspan,
+            p=p)
         self._fields += ['name', 'body']
         self.name = name
         Base.p(self.name, self)
@@ -179,8 +282,16 @@ class EnumDefinition(SourceElement):
             self.v(self.name, visitor)
             self.v(self.body, visitor)
 
+
 class LinkSpec(SourceElement):
-    def __init__(self, field_spec, link_spec, linespan=None, lexspan=None, p=None):
+
+    def __init__(
+            self,
+            field_spec,
+            link_spec,
+            linespan=None,
+            lexspan=None,
+            p=None):
         super(LinkSpec, self).__init__(linespan=linespan, lexspan=lexspan, p=p)
         self._fields += ['link_def', 'field_def']
         self.link_def = link_spec
@@ -194,9 +305,24 @@ class LinkSpec(SourceElement):
             self.v(self.field_def, visitor)
             visitor.visit_LinkSpec_post(self)
 
+
 class MessageDefinition(SourceElement):
-    def __init__(self, name, policy, bases, body, linespan=None, lexspan=None, p=None):
-        super(MessageDefinition, self).__init__(linespan=linespan, lexspan=lexspan, p=p)
+
+    def __init__(
+            self,
+            name,
+            policy,
+            bases,
+            body,
+            linespan=None,
+            lexspan=None,
+            p=None):
+        super(
+            MessageDefinition,
+            self).__init__(
+            linespan=linespan,
+            lexspan=lexspan,
+            p=p)
         self._fields += ['name', 'policy', 'bases', 'body']
 
         self.name = name
@@ -236,9 +362,16 @@ class MessageDefinition(SourceElement):
             visitor.visit_MessageDefinition_post(self)
 """
 
+
 class MessageExtension(SourceElement):
+
     def __init__(self, name, body, linespan=None, lexspan=None, p=None):
-        super(MessageExtension, self).__init__(linespan=linespan, lexspan=lexspan, p=p)
+        super(
+            MessageExtension,
+            self).__init__(
+            linespan=linespan,
+            lexspan=lexspan,
+            p=p)
         self._fields += ['name', 'body']
         self.name = name
         Base.p(self.name, self)
@@ -251,9 +384,23 @@ class MessageExtension(SourceElement):
             self.v(self.body, visitor)
             visitor.visit_MessageExtension_post(self)
 
+
 class MethodDefinition(SourceElement):
-    def __init__(self, name, name2, name3, linespan=None, lexspan=None, p=None):
-        super(MethodDefinition, self).__init__(linespan=linespan, lexspan=lexspan, p=p)
+
+    def __init__(
+            self,
+            name,
+            name2,
+            name3,
+            linespan=None,
+            lexspan=None,
+            p=None):
+        super(
+            MethodDefinition,
+            self).__init__(
+            linespan=linespan,
+            lexspan=lexspan,
+            p=p)
         self._fields += ['name', 'name2', 'name3']
         self.name = name
         Base.p(self.name, self)
@@ -269,9 +416,16 @@ class MethodDefinition(SourceElement):
             self.v(self.name3, visitor)
             visitor.visit_MethodDefinition_post(self)
 
+
 class ServiceDefinition(SourceElement):
+
     def __init__(self, name, body, linespan=None, lexspan=None, p=None):
-        super(ServiceDefinition, self).__init__(linespan=linespan, lexspan=lexspan, p=p)
+        super(
+            ServiceDefinition,
+            self).__init__(
+            linespan=linespan,
+            lexspan=lexspan,
+            p=p)
         self._fields += ['name', 'body']
         self.name = name
         Base.p(self.name, self)
@@ -284,12 +438,20 @@ class ServiceDefinition(SourceElement):
             self.v(self.body, visitor)
             visitor.visit_ServiceDefinition_post(self)
 
+
 class ExtensionsMax(SourceElement):
     pass
 
+
 class ExtensionsDirective(SourceElement):
+
     def __init__(self, fromVal, toVal, linespan=None, lexspan=None, p=None):
-        super(ExtensionsDirective, self).__init__(linespan=linespan, lexspan=lexspan, p=p)
+        super(
+            ExtensionsDirective,
+            self).__init__(
+            linespan=linespan,
+            lexspan=lexspan,
+            p=p)
         self._fields += ['fromVal', 'toVal']
         self.fromVal = fromVal
         Base.p(self.fromVal, self)
@@ -302,6 +464,7 @@ class ExtensionsDirective(SourceElement):
             self.v(self.toVal, visitor)
             visitor.visit_ExtensionsDirective_post(self)
 
+
 class Literal(SourceElement):
 
     def __init__(self, value, linespan=None, lexspan=None, p=None):
@@ -311,6 +474,7 @@ class Literal(SourceElement):
 
     def accept(self, visitor):
         visitor.visit_Literal(self)
+
 
 class Name(SourceElement):
 
@@ -336,18 +500,23 @@ class Name(SourceElement):
     def accept(self, visitor):
         visitor.visit_Name(self)
 
+
 class DotName(Name):
     elements = []
+
     def __init__(self, elements, linespan=None, lexspan=None, p=None):
-        super(DotName, self).__init__('.'.join([str(x) for x in elements]), linespan=linespan, lexspan=lexspan, p=p)
+        super(DotName, self).__init__(
+            '.'.join([str(x) for x in elements]), linespan=linespan, lexspan=lexspan, p=p)
         self._fields += ['elements']
         self.elements = elements
         self.deriveLex()
 
     def deriveLex(self):
-        if isinstance(self.elements, list) and len(self.elements)>0:
-            self.lexspan = (min([x.lexspan[0] for x in self.elements if x.lexspan[0] != 0]), max([x.lexspan[1] for x in self.elements if x.lexspan[1] != 0]))
-            self.linespan = (min([x.linespan[0] for x in self.elements if x.linespan[0] != 0]), max([x.linespan[1] for x in self.elements if x.linespan[1] != 0]))
+        if isinstance(self.elements, list) and len(self.elements) > 0:
+            self.lexspan = (min([x.lexspan[0] for x in self.elements if x.lexspan[0] != 0]), max(
+                [x.lexspan[1] for x in self.elements if x.lexspan[1] != 0]))
+            self.linespan = (min([x.linespan[0] for x in self.elements if x.linespan[0] != 0]), max(
+                [x.linespan[1] for x in self.elements if x.linespan[1] != 0]))
         elif hasattr(self.elements, "lexspan"):
             self.lexspan = self.elements.lexspan
             self.linespan = self.elements.linespan
@@ -357,10 +526,16 @@ class DotName(Name):
     def accept(self, visitor):
         visitor.visit_DotName(self)
 
+
 class ProtoFile(SourceElement):
 
     def __init__(self, body, linespan=None, lexspan=None, p=None):
-        super(ProtoFile, self).__init__(linespan=linespan, lexspan=lexspan, p=p)
+        super(
+            ProtoFile,
+            self).__init__(
+            linespan=linespan,
+            lexspan=lexspan,
+            p=p)
         self._fields += ['body']
         self.body = body
         Base.p(self.body, self)

@@ -54,6 +54,5 @@ tests = globals()
 
 for t in tests:
     if t.startswith('test'):
-        print 'parsin %s'%t
+        print 'parsin %s' % t
         parser.parse_string(globals()[t])
-

@@ -11,9 +11,9 @@ from setuptools import setup
 
 setup(
     name='plyxproto',
-    version='3.0.0',
+    version='3.1.0',
     description='xproto parser and processor',
-    author='Dusan Klinec (original protobuf parser), Sapan Bhatia (xproto extensions), Zack Williams (maintenance)',
+    author='Dusan Klinec (original protobuf parser), Sapan Bhatia (xproto extensions), Zack Williams (maintenance), Scott Baker (maintenance)',
     author_email='sapan@opennetworking.org',
     url='https://github.com/sb98052/plyprotobuf',
     license='Apache Software License',

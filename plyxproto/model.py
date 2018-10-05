@@ -105,7 +105,8 @@ class LinkDefinition(SourceElement):
             dst_port,
             linespan=None,
             lexspan=None,
-            p=None):
+            p=None,
+            reverse_id=None):
         super(
             LinkDefinition,
             self).__init__(
@@ -128,6 +129,9 @@ class LinkDefinition(SourceElement):
 
         self.dst_port = dst_port
         Base.p(self.dst_port, self)
+
+        self.reverse_id = reverse_id
+        Base.p(self.reverse_id, self)
 
     def accept(self, visitor):
         visitor.visit_LinkDefinition(self)

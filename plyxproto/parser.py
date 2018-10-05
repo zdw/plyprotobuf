@@ -218,6 +218,10 @@ class ProtobufParser(object):
         '''field_id : NUM'''
         p[0] = LU.i(p, 1)
 
+    def p_reverse_id(self, p):
+        '''reverse_id : NUM'''
+        p[0] = LU.i(p, 1)
+
     def p_rvalue(self, p):
         '''rvalue : NUM
                   | TRUE
@@ -367,6 +371,32 @@ class ProtobufParser(object):
 
         self.lh.set_parse_object(p[0], p)
 
+    # TODO: Add directives to link definition
+    def p_link_definition_with_reverse (self, p):
+        '''link_definition_with_reverse : field_modifier link_type field_name policy_opt ARROW dotname slash_name colon_fieldname EQ field_id COLON reverse_id field_directives SEMI'''
+        p[0] = LinkSpec(
+            FieldDefinition(
+                LU.i(
+                    p, 1), Name('int32'), LU.i(
+                    p, 3), LU.i(
+                    p, 4), LU.i(
+                        p, 10), [
+                            FieldDirective(
+                                Name('type'), Name('link')), FieldDirective(
+                                    Name('model'), LU.i(
+                                        p, 6))] + srcPort(
+                                            LU.i(
+                                                p, 8)) + LU.i(
+                                                    p, 13)), LinkDefinition(
+                                                        LU.i(
+                                                            p, 2), LU.i(
+                                                                p, 3), LU.i(
+                                                                    p, 6), LU.i(
+                                                                        p, 7), LU.i(
+                                                                            p, 8), reverse_id= LU.i(p, 12)))
+
+        self.lh.set_parse_object(p[0], p)
+
     # Root of the field declaration.
     def p_field_definition(self, p):
         '''field_definition : field_modifier field_type field_name policy_opt EQ field_id field_directives SEMI'''
@@ -474,6 +504,7 @@ class ProtobufParser(object):
     def p_message_body_part(self, p):
         '''message_body_part : field_definition
                            | link_definition
+                           | link_definition_with_reverse
                            | enum_definition
                            | option_directive
                            | message_definition

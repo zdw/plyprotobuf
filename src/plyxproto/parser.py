@@ -1,8 +1,9 @@
-__author__ = "Dusan (Ph4r05) Klinec"
+from __future__ import absolute_import
+from __future__ import print_function
 
-__copyright__ = "Copyright (C) 2014 Dusan (ph4r05) Klinec"
+__author__ = "Dusan (Ph4r05) Klinec, Sapan Bhatia, ONF"
+__copyright__ = "Copyright (C) 2014 Dusan (ph4r05) Klinec, 2017-2019 ONF"
 __license__ = "Apache License, Version 2.0"
-__version__ = "1.0"
 
 import ply.lex as lex
 import ply.yacc as yacc
@@ -33,8 +34,8 @@ from .model import (
     ServiceDefinition,
 )
 
-from helpers import LexHelper, LU
-from logicparser import FOLParser, FOLLexer, FOLParsingError
+from .helpers import LexHelper, LU
+from .logicparser import FOLParser, FOLLexer, FOLParsingError
 import ast
 
 
@@ -153,8 +154,8 @@ class ProtobufLexer(object):
         t.lexer.lineno += len(t.value) / 2
 
     def t_error(self, t):
-        print("Illegal character '{}' ({}) in line {}".format(
-            t.value[0], hex(ord(t.value[0])), t.lexer.lineno))
+        print(("Illegal character '{}' ({}) in line {}".format(
+            t.value[0], hex(ord(t.value[0])), t.lexer.lineno)))
         t.lexer.skip(1)
 
 
@@ -347,7 +348,10 @@ class ProtobufParser(object):
 
     # TODO: Add directives to link definition
     def p_link_definition(self, p):
-        '''link_definition : field_modifier link_type field_name policy_opt ARROW dotname slash_name colon_fieldname EQ field_id field_directives SEMI'''
+        '''
+        link_definition : field_modifier link_type field_name policy_opt ARROW dotname slash_name colon_fieldname EQ field_id field_directives SEMI
+        '''
+
         p[0] = LinkSpec(
             FieldDefinition(
                 LU.i(
@@ -372,8 +376,10 @@ class ProtobufParser(object):
         self.lh.set_parse_object(p[0], p)
 
     # TODO: Add directives to link definition
-    def p_link_definition_with_reverse (self, p):
-        '''link_definition_with_reverse : field_modifier link_type field_name policy_opt ARROW dotname slash_name colon_fieldname EQ field_id COLON reverse_id field_directives SEMI'''
+    def p_link_definition_with_reverse(self, p):
+        '''
+        link_definition_with_reverse : field_modifier link_type field_name policy_opt ARROW dotname slash_name colon_fieldname EQ field_id COLON reverse_id field_directives SEMI
+        '''
         p[0] = LinkSpec(
             FieldDefinition(
                 LU.i(
@@ -393,7 +399,7 @@ class ProtobufParser(object):
                                                                 p, 3), LU.i(
                                                                     p, 6), LU.i(
                                                                         p, 7), LU.i(
-                                                                            p, 8), reverse_id= LU.i(p, 12)))
+                                                                            p, 8), reverse_id=LU.i(p, 12)))
 
         self.lh.set_parse_object(p[0], p)
 
@@ -440,10 +446,10 @@ class ProtobufParser(object):
     def p_reduce_definition(self, p):
         '''reduce_definition : REDUCE NAME POLICYBODY'''
         ltxt = p[3].lstrip('<').rstrip('>')
-        l = ast.parse(ltxt).body[0]
-        if not isinstance(l, ast.Expr):
+        al = ast.parse(ltxt).body[0]
+        if not isinstance(al, ast.Expr):
             raise PythonError("reduce operator needs to be an expression")
-        elif not isinstance(l.value, ast.Lambda):
+        elif not isinstance(al.value, ast.Lambda):
             raise PythonError("reduce operator needs to be a lambda")
 
         p[0] = ReduceDefinition(Name(LU.i(p, 2)), ltxt)
@@ -452,10 +458,10 @@ class ProtobufParser(object):
     def p_map_definition(self, p):
         '''map_definition : MAP NAME POLICYBODY'''
         ltxt = p[3].lstrip('<').rstrip('>')
-        l = ast.parse(ltxt).body[0]
-        if not isinstance(l, ast.Expr):
+        al = ast.parse(ltxt).body[0]
+        if not isinstance(al, ast.Expr):
             raise PythonError("map operator needs to be an expression")
-        elif not isinstance(l.value, ast.Lambda):
+        elif not isinstance(al.value, ast.Lambda):
             raise PythonError("map operator needs to be a lambda")
 
         p[0] = MapDefinition(Name(LU.i(p, 2)), ltxt)
@@ -606,7 +612,8 @@ class ProtobufParser(object):
         p[0] = OptionStatement(Name(LU.i(p, 2)), LU.i(p, 4))
         self.lh.set_parse_object(p[0], p)
 
-    # topLevelStatement = Group(message_definition | message_extension | enum_definition | service_definition | import_directive | option_directive | package_definition)
+    # topLevelStatement = Group(message_definition | message_extension | enum_definition | service_definition |
+    #                           import_directive | option_directive | package_definition)
     def p_topLevel(self, p):
         '''topLevel : message_definition
                     | message_extension
@@ -664,7 +671,7 @@ class ProtobufAnalyzer(object):
 
     def tokenize_file(self, _file):
         if isinstance(_file, str):
-            _file = file(_file)
+            _file = open(_file)
         content = ''
         for line in _file:
             content += line
@@ -677,7 +684,7 @@ class ProtobufAnalyzer(object):
 
     def parse_file(self, _file, debug=0):
         if isinstance(_file, str):
-            _file = file(_file)
+            _file = open(_file)
         content = ''
         for line in _file:
             content += line

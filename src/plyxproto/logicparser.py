@@ -1,9 +1,11 @@
+from __future__ import absolute_import
+from __future__ import print_function
 __author__ = "Sapan Bhatia"
 
 __copyright__ = "Copyright (C) 2017 Open Networking Lab"
 __version__ = "1.0"
 
-from helpers import LexHelper
+from .helpers import LexHelper
 
 
 class FOLParsingError(Exception):
@@ -69,14 +71,14 @@ class FOLLexer(object):
         t.lexer.lineno += t.value.count('\n')
 
     def t_SYMBOL(self, t):
-        '[A-Za-z_$][\.A-Za-z0-9_+$]*(\(\))?'
+        r'[A-Za-z_$][\.A-Za-z0-9_+$]*(\(\))?'
         if t.value in FOLLexer.keywords:
             t.type = t.value.upper()
         return t
 
     def t_error(self, t):
-        print("Illegal character '{}' ({}) in line {}".format(
-            t.value[0], hex(ord(t.value[0])), t.lexer.lineno))
+        print(("Illegal character '{}' ({}) in line {}".format(
+            t.value[0], hex(ord(t.value[0])), t.lexer.lineno)))
         t.lexer.skip(1)
 
 
